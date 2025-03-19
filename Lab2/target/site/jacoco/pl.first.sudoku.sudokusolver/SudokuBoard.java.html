@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SudokuBoard.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">SudokuSolver</a> &gt; <a href="index.source.html" class="el_package">pl.first.sudoku.sudokusolver</a> &gt; <span class="el_source">SudokuBoard.java</span></div><h1>SudokuBoard.java</h1><pre class="source lang-java linenums">/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package pl.first.sudoku.sudokusolver;
+
+import java.util.Random;
+
+/**
+ *
+ * @author zhuma
+ * SudokuBoard class represents a 9x9 Sudoku puzzle board
+ * It provides methods to generate and access a valid Sudoku board
+ */
+public class SudokuBoard {
+    private static final int BOARD_SIZE = 9;
+    private static final int SUBSECTION_SIZE = 3;
+    private static final int BOARD_START_INDEX = 0;
+    private static final int NO_VALUE = 0;
+    private static final int MIN_VALUE = 1;
+    private static final int MAX_VALUE = 9;
+
+    private int[][] board;
+    
+    private Random random;
+    
+    /**
+     * Constructor for SudokuBoard
+     * Initializes an empty board
+     */
+<span class="fc" id="L31">    public SudokuBoard() {</span>
+<span class="fc" id="L32">        board = new int[BOARD_SIZE][BOARD_SIZE];</span>
+<span class="fc" id="L33">        random = new Random();</span>
+<span class="fc" id="L34">    }</span>
+    
+    /**
+     * Fills the board with valid values according to Sudoku rules
+     * Uses a backtracking algorithm
+     * 
+     * @return true if the board was successfully filled, false otherwise
+     */
+    public boolean fillBoard() {
+<span class="fc" id="L43">        clearBoard();</span>
+
+<span class="fc" id="L45">        return backtrack(BOARD_START_INDEX, BOARD_START_INDEX);</span>
+    }
+    
+    /**
+     * Gets the value at specified coordinates
+     * 
+     * @param row row coordinate (0-8)
+     * @param col column coordinate (0-8)
+     * @return value at the specified position
+     * @throws IllegalArgumentException if coordinates are invalid
+     */
+    public int getValueAt(int row, int col) {
+<span class="fc bfc" id="L57" title="All 8 branches covered.">        if (row &lt; 0 || row &gt;= BOARD_SIZE || col &lt; 0 || col &gt;= BOARD_SIZE) {</span>
+<span class="fc" id="L58">            throw new IllegalArgumentException(&quot;Invalid board coordinates&quot;);</span>
+        }
+<span class="fc" id="L60">        return board[row][col];</span>
+    }
+    
+    /**
+     * Clears the board by setting all positions to NO_VALUE
+     */
+    private void clearBoard() {
+<span class="fc bfc" id="L67" title="All 2 branches covered.">        for (int row = BOARD_START_INDEX; row &lt; BOARD_SIZE; row++) {</span>
+<span class="fc bfc" id="L68" title="All 2 branches covered.">            for (int col = BOARD_START_INDEX; col &lt; BOARD_SIZE; col++) {</span>
+<span class="fc" id="L69">                board[row][col] = NO_VALUE;</span>
+            }
+        }
+<span class="fc" id="L72">    }</span>
+    
+    /**
+     * Recursive backtracking algorithm to fill the board
+     * For each position, try values 1-9 in random order
+     * 
+     * @param row current row
+     * @param col current column
+     * @return true if the board is filled successfully, false otherwise
+     */
+    private boolean backtrack(int row, int col) {
+<span class="fc bfc" id="L83" title="All 2 branches covered.">        if (row == BOARD_SIZE) {</span>
+<span class="fc" id="L84">            return true;</span>
+        }
+
+<span class="fc bfc" id="L87" title="All 2 branches covered.">        int nextRow = (col == BOARD_SIZE - 1) ? row + 1 : row;</span>
+<span class="fc bfc" id="L88" title="All 2 branches covered.">        int nextCol = (col == BOARD_SIZE - 1) ? 0 : col + 1;</span>
+
+<span class="pc bpc" id="L90" title="1 of 2 branches missed.">        if (board[row][col] != NO_VALUE) {</span>
+<span class="nc" id="L91">            return backtrack(nextRow, nextCol);</span>
+        }
+
+<span class="fc" id="L94">        int[] shuffledValues = getShuffledValues();</span>
+
+<span class="fc bfc" id="L96" title="All 2 branches covered.">        for (int value : shuffledValues) {</span>
+<span class="fc bfc" id="L97" title="All 2 branches covered.">            if (isValidPlacement(row, col, value)) {</span>
+<span class="fc" id="L98">                board[row][col] = value;</span>
+
+<span class="fc bfc" id="L100" title="All 2 branches covered.">                if (backtrack(nextRow, nextCol)) {</span>
+<span class="fc" id="L101">                    return true;</span>
+                }
+
+<span class="fc" id="L104">                board[row][col] = NO_VALUE;</span>
+            }
+        }
+
+<span class="fc" id="L108">        return false;</span>
+    }
+    
+    /**
+     * Generate an array of integers from 1-9 in random order
+     * 
+     * @return shuffled array of integers 1-9
+     */
+    private int[] getShuffledValues() {
+<span class="fc" id="L117">        int[] values = new int[MAX_VALUE];</span>
+
+<span class="fc bfc" id="L119" title="All 2 branches covered.">        for (int i = 0; i &lt; MAX_VALUE; i++) {</span>
+<span class="fc" id="L120">            values[i] = i + 1;</span>
+        }
+
+<span class="fc bfc" id="L123" title="All 2 branches covered.">        for (int i = MAX_VALUE - 1; i &gt; 0; i--) {</span>
+<span class="fc" id="L124">            int j = random.nextInt(i + 1);</span>
+<span class="fc" id="L125">            int temp = values[i];</span>
+<span class="fc" id="L126">            values[i] = values[j];</span>
+<span class="fc" id="L127">            values[j] = temp;</span>
+        }
+        
+<span class="fc" id="L130">        return values;</span>
+    }
+    
+    /**
+     * Checks if placing a value at the specified position is valid
+     * 
+     * @param row row coordinate
+     * @param col column coordinate
+     * @param value value to check
+     * @return true if the placement is valid, false otherwise
+     */
+    private boolean isValidPlacement(int row, int col, int value) {
+<span class="fc bfc" id="L142" title="All 2 branches covered.">        return isRowValid(row, value) </span>
+<span class="fc bfc" id="L143" title="All 2 branches covered.">                &amp;&amp; isColumnValid(col, value) </span>
+<span class="fc bfc" id="L144" title="All 2 branches covered.">                &amp;&amp; isBoxValid(row, col, value);</span>
+    }
+    
+    /**
+     * Checks if placing a value in the specified row is valid
+     * 
+     * @param row row to check
+     * @param value value to check
+     * @return true if the placement is valid, false otherwise
+     */
+    private boolean isRowValid(int row, int value) {
+<span class="fc bfc" id="L155" title="All 2 branches covered.">        for (int col = BOARD_START_INDEX; col &lt; BOARD_SIZE; col++) {</span>
+<span class="fc bfc" id="L156" title="All 2 branches covered.">            if (board[row][col] == value) {</span>
+<span class="fc" id="L157">                return false;</span>
+            }
+        }
+<span class="fc" id="L160">        return true;</span>
+    }
+    
+    /**
+     * Checks if placing a value in the specified column is valid
+     * 
+     * @param col column to check
+     * @param value value to check
+     * @return true if the placement is valid, false otherwise
+     */
+    private boolean isColumnValid(int col, int value) {
+<span class="fc bfc" id="L171" title="All 2 branches covered.">        for (int row = BOARD_START_INDEX; row &lt; BOARD_SIZE; row++) {</span>
+<span class="fc bfc" id="L172" title="All 2 branches covered.">            if (board[row][col] == value) {</span>
+<span class="fc" id="L173">                return false;</span>
+            }
+        }
+<span class="fc" id="L176">        return true;</span>
+    }
+    
+    /**
+     * Checks if placing a value in the 3x3 box containing the specified position is valid
+     * 
+     * @param row row coordinate
+     * @param col column coordinate
+     * @param value value to check
+     * @return true if the placement is valid, false otherwise
+     */
+    private boolean isBoxValid(int row, int col, int value) {
+<span class="fc" id="L188">        int boxRowStart = (row / SUBSECTION_SIZE) * SUBSECTION_SIZE;</span>
+<span class="fc" id="L189">        int boxColStart = (col / SUBSECTION_SIZE) * SUBSECTION_SIZE;</span>
+        
+<span class="fc bfc" id="L191" title="All 2 branches covered.">        for (int r = 0; r &lt; SUBSECTION_SIZE; r++) {</span>
+<span class="fc bfc" id="L192" title="All 2 branches covered.">            for (int c = 0; c &lt; SUBSECTION_SIZE; c++) {</span>
+<span class="fc bfc" id="L193" title="All 2 branches covered.">                if (board[boxRowStart + r][boxColStart + c] == value) {</span>
+<span class="fc" id="L194">                    return false;</span>
+                }
+            }
+        }
+<span class="fc" id="L198">        return true;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="ru"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SudokuSolver.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">SudokuSolver</a> &gt; <a href="index.source.html" class="el_package">pl.first.sudoku.sudokusolver</a> &gt; <span class="el_source">SudokuSolver.java</span></div><h1>SudokuSolver.java</h1><pre class="source lang-java linenums">/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+package pl.first.sudoku.sudokusolver;
+
+/**
+ * Check the checkstyle file command - checkstyle:check
+ * @author zhuma
+ */
+<span class="nc" id="L11">public class SudokuSolver {</span>
+    public static void main(String[] args) {
+<span class="nc" id="L13">        System.out.println(&quot;Sudoku Solver Demo&quot;);</span>
+        
+<span class="nc" id="L15">        SudokuBoard board = new SudokuBoard();</span>
+<span class="nc bnc" id="L16" title="All 2 branches missed.">        if (board.fillBoard()) {</span>
+<span class="nc" id="L17">            System.out.println(&quot;Successfully filled Sudoku board:&quot;);</span>
+<span class="nc" id="L18">            printBoard(board);</span>
+        } else {
+<span class="nc" id="L20">            System.out.println(&quot;Failed to fill Sudoku board&quot;);</span>
+        }
+<span class="nc" id="L22">    }</span>
+    
+    private static void printBoard(SudokuBoard board) {
+<span class="nc bnc" id="L25" title="All 2 branches missed.">        for (int row = 0; row &lt; 9; row++) {</span>
+<span class="nc bnc" id="L26" title="All 4 branches missed.">            if (row % 3 == 0 &amp;&amp; row != 0) {</span>
+<span class="nc" id="L27">                System.out.println(&quot;------+-------+------&quot;);</span>
+            }
+            
+<span class="nc bnc" id="L30" title="All 2 branches missed.">            for (int col = 0; col &lt; 9; col++) {</span>
+<span class="nc bnc" id="L31" title="All 4 branches missed.">                if (col % 3 == 0 &amp;&amp; col != 0) {</span>
+<span class="nc" id="L32">                    System.out.print(&quot;| &quot;);</span>
+                }
+                
+<span class="nc" id="L35">                System.out.print(board.getValueAt(row, col) + &quot; &quot;);</span>
+            }
+<span class="nc" id="L37">            System.out.println();</span>
+        }
+<span class="nc" id="L39">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.11.202310140853</span></div></body></html>

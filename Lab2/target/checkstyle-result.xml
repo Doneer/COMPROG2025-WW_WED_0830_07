@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<checkstyle version="10.8.0">
+<file name="C:\Users\zhuma\OneDrive\Documents\NetBeansProjects\WW_WED_0830_07\Lab2\src\main\java\pl\first\sudoku\sudokusolver\SudokuBoard.java">
+<error line="5" column="1" severity="warning" message="&apos;package&apos; должен быть отделён от предыдущей строки." source="com.puppycrawl.tools.checkstyle.checks.whitespace.EmptyLineSeparatorCheck"/>
+<error line="9" severity="warning" message="Отсутствует обобщающего предложения (summary)." source="com.puppycrawl.tools.checkstyle.checks.javadoc.SummaryJavadocCheck"/>
+<error line="12" severity="warning" message="Неправильный уровень отступа для продолжения строки. Ожидаемый уровень: 4." source="com.puppycrawl.tools.checkstyle.checks.javadoc.JavadocTagContinuationIndentationCheck"/>
+<error line="13" severity="warning" message="Неправильный уровень отступа для продолжения строки. Ожидаемый уровень: 4." source="com.puppycrawl.tools.checkstyle.checks.javadoc.JavadocTagContinuationIndentationCheck"/>
+<error line="27" severity="warning" message="Первое предложение Javadoc должно заканчиваться точкой." source="com.puppycrawl.tools.checkstyle.checks.javadoc.SummaryJavadocCheck"/>
+<error line="36" severity="warning" message="Первое предложение Javadoc должно заканчиваться точкой." source="com.puppycrawl.tools.checkstyle.checks.javadoc.SummaryJavadocCheck"/>
+<error line="48" severity="warning" message="Первое предложение Javadoc должно заканчиваться точкой." source="com.puppycrawl.tools.checkstyle.checks.javadoc.SummaryJavadocCheck"/>
+<error line="63" severity="warning" message="Первое предложение Javadoc должно заканчиваться точкой." source="com.puppycrawl.tools.checkstyle.checks.javadoc.SummaryJavadocCheck"/>
+<error line="74" severity="warning" message="Первое предложение Javadoc должно заканчиваться точкой." source="com.puppycrawl.tools.checkstyle.checks.javadoc.SummaryJavadocCheck"/>
+<error line="111" severity="warning" message="Первое предложение Javadoc должно заканчиваться точкой." source="com.puppycrawl.tools.checkstyle.checks.javadoc.SummaryJavadocCheck"/>
+<error line="133" severity="warning" message="Первое предложение Javadoc должно заканчиваться точкой." source="com.puppycrawl.tools.checkstyle.checks.javadoc.SummaryJavadocCheck"/>
+<error line="147" severity="warning" message="Первое предложение Javadoc должно заканчиваться точкой." source="com.puppycrawl.tools.checkstyle.checks.javadoc.SummaryJavadocCheck"/>
+<error line="163" severity="warning" message="Первое предложение Javadoc должно заканчиваться точкой." source="com.puppycrawl.tools.checkstyle.checks.javadoc.SummaryJavadocCheck"/>
+<error line="179" severity="warning" message="Первое предложение Javadoc должно заканчиваться точкой." source="com.puppycrawl.tools.checkstyle.checks.javadoc.SummaryJavadocCheck"/>
+</file>
+<file name="C:\Users\zhuma\OneDrive\Documents\NetBeansProjects\WW_WED_0830_07\Lab2\src\main\java\pl\first\sudoku\sudokusolver\SudokuSolver.java">
+<error line="5" column="1" severity="warning" message="&apos;package&apos; должен быть отделён от предыдущей строки." source="com.puppycrawl.tools.checkstyle.checks.whitespace.EmptyLineSeparatorCheck"/>
+<error line="7" severity="warning" message="Первое предложение Javadoc должно заканчиваться точкой." source="com.puppycrawl.tools.checkstyle.checks.javadoc.SummaryJavadocCheck"/>
+</file>
+</checkstyle>
