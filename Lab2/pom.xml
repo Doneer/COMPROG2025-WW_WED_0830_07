@@ -5,6 +5,7 @@
     <artifactId>SudokuSolver</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
+    <description>Team07</description>
     <dependencies>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -30,6 +31,19 @@
         <maven.compiler.release>21</maven.compiler.release>
         <exec.mainClass>pl.first.sudoku.sudokusolver.SudokuSolver</exec.mainClass>
     </properties>
+    
+    <developers>
+        <developer>
+            <id>253857</id>
+            <name>Daniyar Zhumatayev</name>
+            <email>253857@edu.p.lodz.pl</email>
+        </developer>
+        <developer>
+            <id>253854</id>
+            <name>Kuzma Martysiuk</name>
+            <email>253854@edu.p.lodz.pl</email>
+        </developer>
+    </developers>
     
     <build>
         <plugins>
@@ -113,6 +127,48 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jxr-plugin</artifactId>
+                <version>3.3.0</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-pmd-plugin</artifactId>
+                <version>3.21.2</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-pmd-plugin</artifactId>
+                <version>3.21.2</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>net.sourceforge.pmd</groupId>
+                        <artifactId>pmd-compat6</artifactId>
+                        <version>7.0.0-rc4</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>net.sourceforge.pmd</groupId>
+                        <artifactId>pmd-core</artifactId>
+                        <version>7.0.0-rc4</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>net.sourceforge.pmd</groupId>
+                        <artifactId>pmd-java</artifactId>
+                        <version>7.0.0-rc4</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>net.sourceforge.pmd</groupId>
+                        <artifactId>pmd-javascript</artifactId>
+                        <version>7.0.0-rc4</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>net.sourceforge.pmd</groupId>
+                        <artifactId>pmd-jsp</artifactId>
+                        <version>7.0.0-rc4</version>
+                    </dependency>
+                </dependencies>
             </plugin>
         </plugins>
     </build>
