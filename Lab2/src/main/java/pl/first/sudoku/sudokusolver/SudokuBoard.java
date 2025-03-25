@@ -15,44 +15,19 @@ import java.util.Random;
 public class SudokuBoard {
     private static final int BOARD_SIZE = 9;
     private static final int SUBSECTION_SIZE = 3;
-    private static final int BOARD_START_INDEX = 0;
     private static final int NO_VALUE = 0;
-    private static final int MIN_VALUE = 1;
-    private static final int MAX_VALUE = 9;
-
+    
     private int[][] board;
-    
-    private Random random;
-    
-    /**
-     * Constructor for SudokuBoard
-     * Initializes an empty board
-     */
-    public SudokuBoard() {
-        board = new int[BOARD_SIZE][BOARD_SIZE];
-        random = new Random();
+    private ISudokuSolver solver;
+    public SudokuBoard(ISudokuSolver solver) {
+        this.board = new int[BOARD_SIZE][BOARD_SIZE];
+        this.solver = solver;
     }
     
-    /**
-     * Fills the board with valid values according to Sudoku rules
-     * Uses a backtracking algorithm
-     * 
-     * @return true if the board was successfully filled, false otherwise
-     */
-    public boolean fillBoard() {
-        clearBoard();
-
-        return backtrack(BOARD_START_INDEX, BOARD_START_INDEX);
+    public boolean solveGame() {
+        return solver.solve(this);
     }
     
-    /**
-     * Gets the value at specified coordinates
-     * 
-     * @param row row coordinate (0-8)
-     * @param col column coordinate (0-8)
-     * @return value at the specified position
-     * @throws IllegalArgumentException if coordinates are invalid
-     */
     public int getValueAt(int row, int col) {
         if (row < 0 || row >= BOARD_SIZE || col < 0 || col >= BOARD_SIZE) {
             throw new IllegalArgumentException("Invalid board coordinates");
@@ -60,141 +35,64 @@ public class SudokuBoard {
         return board[row][col];
     }
     
-    /**
-     * Clears the board by setting all positions to NO_VALUE
-     */
-    private void clearBoard() {
-        for (int row = BOARD_START_INDEX; row < BOARD_SIZE; row++) {
-            for (int col = BOARD_START_INDEX; col < BOARD_SIZE; col++) {
-                board[row][col] = NO_VALUE;
-            }
+    public void setValueAt(int row, int col, int value) {
+        if (row < 0 || row >= BOARD_SIZE || col < 0 || col >= BOARD_SIZE) {
+            throw new IllegalArgumentException("Invalid board coordinates");
         }
+        if (value < NO_VALUE || value > 9) {
+            throw new IllegalArgumentException("Value must be between 0 and 9");
+        }
+        board[row][col] = value;
     }
     
-    /**
-     * Recursive backtracking algorithm to fill the board
-     * For each position, try values 1-9 in random order
-     * 
-     * @param row current row
-     * @param col current column
-     * @return true if the board is filled successfully, false otherwise
-     */
-    private boolean backtrack(int row, int col) {
-        if (row == BOARD_SIZE) {
-            return true;
-        }
-
-        int nextRow = (col == BOARD_SIZE - 1) ? row + 1 : row;
-        int nextCol = (col == BOARD_SIZE - 1) ? 0 : col + 1;
-
-        if (board[row][col] != NO_VALUE) {
-            return backtrack(nextRow, nextCol);
-        }
-
-        int[] shuffledValues = getShuffledValues();
-
-        for (int value : shuffledValues) {
-            if (isValidPlacement(row, col, value)) {
-                board[row][col] = value;
-
-                if (backtrack(nextRow, nextCol)) {
-                    return true;
-                }
-
-                board[row][col] = NO_VALUE;
-            }
-        }
-
-        return false;
-    }
-    
-    /**
-     * Generate an array of integers from 1-9 in random order
-     * 
-     * @return shuffled array of integers 1-9
-     */
-    private int[] getShuffledValues() {
-        int[] values = new int[MAX_VALUE];
-
-        for (int i = 0; i < MAX_VALUE; i++) {
-            values[i] = i + 1;
-        }
-
-        for (int i = MAX_VALUE - 1; i > 0; i--) {
-            int j = random.nextInt(i + 1);
-            int temp = values[i];
-            values[i] = values[j];
-            values[j] = temp;
-        }
-        
-        return values;
-    }
-    
-    /**
-     * Checks if placing a value at the specified position is valid
-     * 
-     * @param row row coordinate
-     * @param col column coordinate
-     * @param value value to check
-     * @return true if the placement is valid, false otherwise
-     */
-    private boolean isValidPlacement(int row, int col, int value) {
-        return isRowValid(row, value) 
-                && isColumnValid(col, value) 
-                && isBoxValid(row, col, value);
-    }
-    
-    /**
-     * Checks if placing a value in the specified row is valid
-     * 
-     * @param row row to check
-     * @param value value to check
-     * @return true if the placement is valid, false otherwise
-     */
-    private boolean isRowValid(int row, int value) {
-        for (int col = BOARD_START_INDEX; col < BOARD_SIZE; col++) {
-            if (board[row][col] == value) {
-                return false;
-            }
-        }
-        return true;
-    }
-    
-    /**
-     * Checks if placing a value in the specified column is valid
-     * 
-     * @param col column to check
-     * @param value value to check
-     * @return true if the placement is valid, false otherwise
-     */
-    private boolean isColumnValid(int col, int value) {
-        for (int row = BOARD_START_INDEX; row < BOARD_SIZE; row++) {
-            if (board[row][col] == value) {
-                return false;
-            }
-        }
-        return true;
-    }
-    
-    /**
-     * Checks if placing a value in the 3x3 box containing the specified position is valid
-     * 
-     * @param row row coordinate
-     * @param col column coordinate
-     * @param value value to check
-     * @return true if the placement is valid, false otherwise
-     */
-    private boolean isBoxValid(int row, int col, int value) {
-        int boxRowStart = (row / SUBSECTION_SIZE) * SUBSECTION_SIZE;
-        int boxColStart = (col / SUBSECTION_SIZE) * SUBSECTION_SIZE;
-        
-        for (int r = 0; r < SUBSECTION_SIZE; r++) {
-            for (int c = 0; c < SUBSECTION_SIZE; c++) {
-                if (board[boxRowStart + r][boxColStart + c] == value) {
-                    return false;
+    public boolean isValid() {
+        for (int row = 0; row < BOARD_SIZE; row++) {
+            boolean[] used = new boolean[10];
+            for (int col = 0; col < BOARD_SIZE; col++) {
+                int value = board[row][col];
+                if (value != NO_VALUE) {
+                    if (used[value]) {
+                        return false;
+                    }
+                    used[value] = true;
                 }
             }
         }
+        
+        for (int col = 0; col < BOARD_SIZE; col++) {
+            boolean[] used = new boolean[10];
+            for (int row = 0; row < BOARD_SIZE; row++) {
+                int value = board[row][col];
+                if (value != NO_VALUE) {
+                    if (used[value]) {
+                        return false;
+                    }
+                    used[value] = true;
+                }
+            }
+        }
+        
+        for (int boxRow = 0; boxRow < 3; boxRow++) {
+            for (int boxCol = 0; boxCol < 3; boxCol++) {
+                boolean[] used = new boolean[10];
+                for (int row = 0; row < 3; row++) {
+                    for (int col = 0; col < 3; col++) {
+                        int value = board[boxRow * 3 + row][boxCol * 3 + col];
+                        if (value != NO_VALUE) {
+                            if (used[value]) {
+                                return false;
+                            }
+                            used[value] = true;
+                        }
+                    }
+                }
+            }
+        }
+        
         return true;
+    }
+    
+    public boolean fillBoard() {
+        return solveGame();
     }
 }
