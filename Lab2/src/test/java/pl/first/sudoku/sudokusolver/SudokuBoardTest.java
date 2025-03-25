@@ -14,22 +14,18 @@ import java.util.Set;
  * @author zhuma
  */
 public class SudokuBoardTest {
-    
-     private static final int BOARD_SIZE = 9;
+    private static final int BOARD_SIZE = 9;
     private static final int SUBSECTION_SIZE = 3;
     
-    /**
-     * Test if fillBoard generates a valid Sudoku board
-     * Checks all rows, columns, and boxes for duplicates
-     */
     @Test
-    public void testFillBoardGeneratesValidBoard() {
-        SudokuBoard board = new SudokuBoard();
+    public void testSolveGameGeneratesValidBoard() {
+        ISudokuSolver solver = new BacktrackingSudokuSolver();
+        SudokuBoard board = new SudokuBoard(solver);
         
-        boolean result = board.fillBoard();
+        boolean result = board.solveGame();
         
-        //Check if filling was successful
-        assertTrue(result, "Board filling should be successful");
+        //Check if solving was successful
+        assertTrue(result, "Board solving should be successful");
         
         //Check all rows for duplicates
         for (int row = 0; row < BOARD_SIZE; row++) {
@@ -75,14 +71,12 @@ public class SudokuBoardTest {
         }
     }
     
-    /**
-     * here we test if subsequent calls to fillBoard generate different layouts
-     */
     @Test
-    public void testSubsequentFillBoardCallsGenerateDifferentLayouts() {
-        SudokuBoard board = new SudokuBoard();
+    public void testSubsequentSolveGameCallsGenerateDifferentLayouts() {
+        ISudokuSolver solver = new BacktrackingSudokuSolver();
+        SudokuBoard board = new SudokuBoard(solver);
         
-        assertTrue(board.fillBoard(), "First filling should be successful");
+        assertTrue(board.solveGame(), "First solving should be successful");
 
         int[][] firstBoard = new int[BOARD_SIZE][BOARD_SIZE];
         for (int row = 0; row < BOARD_SIZE; row++) {
@@ -91,7 +85,7 @@ public class SudokuBoardTest {
             }
         }
 
-        assertTrue(board.fillBoard(), "Second filling should be successful");
+        assertTrue(board.solveGame(), "Second solving should be successful");
 
         int differences = 0;
         for (int row = 0; row < BOARD_SIZE; row++) {
@@ -103,17 +97,15 @@ public class SudokuBoardTest {
         }
 
         assertTrue(differences > 0, 
-                "Subsequent fillBoard calls should generate different layouts");
+                "Subsequent solveGame calls should generate different layouts");
         System.out.println("Number of different positions between two boards: " + differences);
     }
     
-    /**
-     * testing if getValueAt throws exception for invalid coordinates
-     */
     @Test
     public void testGetValueAtWithInvalidCoordinates() {
-        SudokuBoard board = new SudokuBoard();
-        board.fillBoard();
+        ISudokuSolver solver = new BacktrackingSudokuSolver();
+        SudokuBoard board = new SudokuBoard(solver);
+        board.solveGame();
         
         //with negative row
         assertThrows(IllegalArgumentException.class, () -> {
@@ -134,5 +126,75 @@ public class SudokuBoardTest {
         assertThrows(IllegalArgumentException.class, () -> {
             board.getValueAt(0, 9);
         }, "Should throw exception for column out of bounds");
+    }
+    
+    @Test
+    public void testSetValueAtWithInvalidValues() {
+        ISudokuSolver solver = new BacktrackingSudokuSolver();
+        SudokuBoard board = new SudokuBoard(solver);
+        
+        //with negative value
+        assertThrows(IllegalArgumentException.class, () -> {
+            board.setValueAt(0, 0, -1);
+        }, "Should throw exception for negative value");
+        
+        //with value too large
+        assertThrows(IllegalArgumentException.class, () -> {
+            board.setValueAt(0, 0, 10);
+        }, "Should throw exception for value out of bounds");
+        
+        //with invalid coordinates
+        assertThrows(IllegalArgumentException.class, () -> {
+            board.setValueAt(-1, 0, 5);
+        }, "Should throw exception for negative row");
+        
+        assertThrows(IllegalArgumentException.class, () -> {
+            board.setValueAt(0, -1, 5);
+        }, "Should throw exception for negative column");
+        
+        assertThrows(IllegalArgumentException.class, () -> {
+            board.setValueAt(9, 0, 5);
+        }, "Should throw exception for row out of bounds");
+        
+        assertThrows(IllegalArgumentException.class, () -> {
+            board.setValueAt(0, 9, 5);
+        }, "Should throw exception for column out of bounds");
+    }
+    
+    @Test
+    public void testIsValid() {
+        ISudokuSolver solver = new BacktrackingSudokuSolver();
+        SudokuBoard board = new SudokuBoard(solver);
+        
+        assertTrue(board.isValid(), "Empty board should be valid");
+        
+        board.setValueAt(0, 0, 1);
+        board.setValueAt(0, 1, 2);
+        board.setValueAt(0, 2, 3);
+        assertTrue(board.isValid(), "Board with valid values should be valid");
+
+        board.setValueAt(0, 3, 1); 
+        assertFalse(board.isValid(), "Board with duplicate in row should be invalid");
+        
+        board.setValueAt(0, 3, 0);
+        assertTrue(board.isValid(), "Board should be valid after removing duplicate");
+        
+        board.setValueAt(1, 0, 1); 
+        assertFalse(board.isValid(), "Board with duplicate in column should be invalid");
+        
+        board.setValueAt(1, 0, 0);
+        assertTrue(board.isValid(), "Board should be valid after removing duplicate");
+        
+        board.setValueAt(1, 1, 1);
+        assertFalse(board.isValid(), "Board with duplicate in box should be invalid");
+    }
+
+    @Test
+    public void testFillBoardBackwardCompatibility() {
+        ISudokuSolver solver = new BacktrackingSudokuSolver();
+        SudokuBoard board = new SudokuBoard(solver);
+        
+        assertTrue(board.fillBoard(), "fillBoard should work through backward compatibility");
+        assertTrue(board.isValid(), "Board should be valid after using fillBoard");
     }
 }
