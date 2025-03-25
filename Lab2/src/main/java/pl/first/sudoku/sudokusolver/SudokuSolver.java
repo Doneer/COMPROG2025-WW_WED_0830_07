@@ -12,8 +12,11 @@ public class SudokuSolver {
     public static void main(String[] args) {
         System.out.println("Sudoku Solver Demo");
         
-        SudokuBoard board = new SudokuBoard();
-        if (board.fillBoard()) {
+        // Create a solver implementation and inject it into the board
+        ISudokuSolver solver = new BacktrackingSudokuSolver();
+        SudokuBoard board = new SudokuBoard(solver);
+        
+        if (board.solveGame()) {
             System.out.println("Successfully filled Sudoku board:");
             printBoard(board);
         } else {
