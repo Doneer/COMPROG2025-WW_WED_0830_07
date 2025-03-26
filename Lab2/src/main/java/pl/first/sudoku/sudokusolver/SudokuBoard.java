@@ -2,15 +2,13 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
+
 package pl.first.sudoku.sudokusolver;
 
-import java.util.Random;
-
 /**
- *
+ * SudokuBoard class represents a 9x9 Sudoku puzzle board.
+ * It provides methods to generate and access a valid Sudoku board.
  * @author zhuma
- * SudokuBoard class represents a 9x9 Sudoku puzzle board
- * It provides methods to generate and access a valid Sudoku board
  */
 public class SudokuBoard {
     private static final int BOARD_SIZE = 9;
@@ -19,6 +17,7 @@ public class SudokuBoard {
     
     private int[][] board;
     private ISudokuSolver solver;
+    
     public SudokuBoard(ISudokuSolver solver) {
         this.board = new int[BOARD_SIZE][BOARD_SIZE];
         this.solver = solver;

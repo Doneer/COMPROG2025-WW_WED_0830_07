@@ -93,6 +93,11 @@
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <version>0.8.11</version>
+                <configuration> 
+                    <excludes> 
+                        <exclude>**/module-info.class</exclude> 
+                    </excludes> 
+                </configuration>
                 <executions>
                     <execution>
                         <id>default-prepare-agent</id>

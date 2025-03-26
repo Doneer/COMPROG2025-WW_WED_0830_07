@@ -2,14 +2,16 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
+
 package pl.first.sudoku.sudokusolver;
 
 import java.util.Random;
 /**
- *
+ * Implementation of the SudokuSolver interface using a backtracking algorithm.
  * @author Zhmaggernaut
  */
-public class BacktrackingSudokuSolver implements ISudokuSolver{
+
+public class BacktrackingSudokuSolver implements ISudokuSolver {
     private static final int BOARD_SIZE = 9;
     private static final int SUBSECTION_SIZE = 3;
     private static final int BOARD_START_INDEX = 0;
@@ -33,6 +35,7 @@ public class BacktrackingSudokuSolver implements ISudokuSolver{
         
         return backtrack(board, BOARD_START_INDEX, BOARD_START_INDEX);
     }
+    
     private boolean backtrack(SudokuBoard board, int row, int col) {
         if (row == BOARD_SIZE) {
             return true;
@@ -61,6 +64,7 @@ public class BacktrackingSudokuSolver implements ISudokuSolver{
 
         return false;
     }
+    
     private int[] getShuffledValues() {
         int[] values = new int[MAX_VALUE];
 

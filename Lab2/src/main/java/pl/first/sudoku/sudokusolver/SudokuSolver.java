@@ -2,17 +2,17 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
+
 package pl.first.sudoku.sudokusolver;
 
 /**
- * Check the checkstyle file command - checkstyle:check
+ * Check the checkstyle file command - checkstyle:check.
  * @author zhuma
  */
 public class SudokuSolver {
     public static void main(String[] args) {
         System.out.println("Sudoku Solver Demo");
         
-        // Create a solver implementation and inject it into the board
         ISudokuSolver solver = new BacktrackingSudokuSolver();
         SudokuBoard board = new SudokuBoard(solver);
         
