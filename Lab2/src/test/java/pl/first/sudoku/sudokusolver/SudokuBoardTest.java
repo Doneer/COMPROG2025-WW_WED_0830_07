@@ -86,7 +86,6 @@ public class SudokuBoardTest {
             }
         }
 
-        // Create a new board with the same solver - this will generate a different solution
         SudokuBoard board2 = new SudokuBoard(solver);
         assertTrue(board2.solveGame(), "Second solving should be successful");
 
