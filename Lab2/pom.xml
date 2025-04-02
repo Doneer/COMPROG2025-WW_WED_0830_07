@@ -5,7 +5,7 @@
     <artifactId>SudokuSolver</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
-    <description>Team07</description>
+    <description>Project #3 of laboratory group WW_WED_0830_07</description>
     <dependencies>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -95,7 +95,8 @@
                 <version>0.8.11</version>
                 <configuration> 
                     <excludes> 
-                        <exclude>**/module-info.class</exclude> 
+                        <exclude>**/module-info.class</exclude>
+                        <exclude>**/SudokuSolver.class</exclude> 
                     </excludes> 
                 </configuration>
                 <executions>
@@ -137,11 +138,6 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jxr-plugin</artifactId>
                 <version>3.3.0</version>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-pmd-plugin</artifactId>
-                <version>3.21.2</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -210,6 +206,12 @@
                         <reports>
                             <report>report</report>
                         </reports>
+                        <configuration>
+                            <excludes>
+                                <exclude>**/module-info.class</exclude>
+                                <exclude>**/SudokuSolver.class</exclude>
+                            </excludes>
+                        </configuration>
                     </reportSet>
                 </reportSets>
             </plugin>

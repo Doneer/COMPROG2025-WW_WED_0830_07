@@ -37,9 +37,17 @@ public class BacktrackingSudokuSolverTest {
 
         board.setValueAt(0, 0, 5);
         board.setValueAt(1, 1, 3);
-        board.setValueAt(2, 2, 9);
+        board.setValueAt(2, 2, 1);
         
-        assertTrue(solver.solve(board), "Solving with pre-filled values should succeed");
+        assertTrue(solver.solve(board));
+        assertTrue(board.isValid());
+
+        for (int row = 0; row < 9; row++) {
+            for (int col = 0; col < 9; col++) {
+                int value = board.getValueAt(row, col);
+                assertTrue(value >= 1 && value <= 9);
+            }
+        }
     }
     
     @Test

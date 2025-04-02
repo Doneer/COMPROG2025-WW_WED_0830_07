@@ -27,12 +27,6 @@ public class BacktrackingSudokuSolver implements ISudokuSolver {
     
     @Override
     public boolean solve(SudokuBoard board) {
-        for (int row = BOARD_START_INDEX; row < BOARD_SIZE; row++) {
-            for (int col = BOARD_START_INDEX; col < BOARD_SIZE; col++) {
-                board.setValueAt(row, col, NO_VALUE);
-            }
-        }
-        
         return backtrack(board, BOARD_START_INDEX, BOARD_START_INDEX);
     }
     
