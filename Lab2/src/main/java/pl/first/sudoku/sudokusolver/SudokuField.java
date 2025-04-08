@@ -13,7 +13,6 @@ import java.io.Serializable;
  *
  * @author zhuma
  */
-
 public class SudokuField implements Serializable, Cloneable, Comparable<SudokuField> {
     private int value;
     private final PropertyChangeSupport changes = new PropertyChangeSupport(this);

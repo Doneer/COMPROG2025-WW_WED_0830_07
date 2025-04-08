@@ -9,7 +9,6 @@ package pl.first.sudoku.sudokusolver;
  * Interface for Sudoku solving algorithms.
  * @author zhuma
  */
-
 public interface SudokuSolver {
     boolean solve(SudokuBoard board);
 }

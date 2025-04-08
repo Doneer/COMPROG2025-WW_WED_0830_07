@@ -15,7 +15,6 @@ import java.util.List;
  * It provides methods to generate and access a valid Sudoku board.
  * @author zhuma
  */
-
 public class SudokuBoard implements Serializable, Cloneable {
     private static final int BOARD_SIZE = 9;
     private static final int SUBSECTION_SIZE = 3;

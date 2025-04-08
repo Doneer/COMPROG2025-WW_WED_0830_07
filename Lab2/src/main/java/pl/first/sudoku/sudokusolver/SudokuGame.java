@@ -9,7 +9,6 @@ package pl.first.sudoku.sudokusolver;
  * Check the checkstyle file command - checkstyle:check.
  * @author zhuma
  */
-
 public class SudokuGame {
     public static void main(String[] args) {
         System.out.println("Sudoku Solver Demo");

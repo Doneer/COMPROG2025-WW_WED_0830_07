@@ -10,6 +10,10 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
+/**
+ * Implementation of the SudokuSolver interface using a backtracking algorithm.
+ * @author Zhmaggernaut
+ */
 public class SudokuBoxTest {
     
     @Test

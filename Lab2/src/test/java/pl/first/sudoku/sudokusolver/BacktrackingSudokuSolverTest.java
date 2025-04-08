@@ -12,7 +12,6 @@ import static org.junit.jupiter.api.Assertions.*;
  *
  * @author zhuma
  */
-
 public class BacktrackingSudokuSolverTest {
     @Test
     public void testSolve() {

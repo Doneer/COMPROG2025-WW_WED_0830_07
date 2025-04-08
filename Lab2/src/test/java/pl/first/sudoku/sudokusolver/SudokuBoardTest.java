@@ -14,7 +14,6 @@ import java.util.Set;
  *
  * @author zhuma
  */
-
 public class SudokuBoardTest {
     private static final int BOARD_SIZE = 9;
     private static final int SUBSECTION_SIZE = 3;
@@ -199,5 +198,106 @@ public class SudokuBoardTest {
         
         assertTrue(board.fillBoard(), "fillBoard should work through backward compatibility");
         assertTrue(board.isValid(), "Board should be valid after using fillBoard");
+    }
+    
+    @Test
+    public void testGetRow() {
+        SudokuSolver solver = new BacktrackingSudokuSolver();
+        SudokuBoard board = new SudokuBoard(solver);
+
+        board.setValueAt(3, 0, 1);
+        board.setValueAt(3, 4, 5);
+        board.setValueAt(3, 8, 9);
+
+        SudokuRow row = board.getRow(3);
+
+        assertEquals(1, row.getField(0).getFieldValue(), "First field value should be 1");
+        assertEquals(5, row.getField(4).getFieldValue(), "Fifth field value should be 5");
+        assertEquals(9, row.getField(8).getFieldValue(), "Ninth field value should be 9");
+
+        row.getField(2).setFieldValue(3);
+        assertEquals(3, board.getValueAt(3, 2), "Board should reflect changes to row fields");
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            board.getRow(-1);
+        }, "Negative row index should throw exception");
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            board.getRow(9);
+        }, "Row index out of bounds should throw exception");
+    }
+
+    @Test
+    public void testGetColumn() {
+        SudokuSolver solver = new BacktrackingSudokuSolver();
+        SudokuBoard board = new SudokuBoard(solver);
+
+        board.setValueAt(1, 5, 2);
+        board.setValueAt(4, 5, 6);
+        board.setValueAt(7, 5, 8);
+
+        SudokuColumn column = board.getColumn(5);
+
+        assertEquals(2, column.getField(1).getFieldValue(), "Second field value should be 2");
+        assertEquals(6, column.getField(4).getFieldValue(), "Fifth field value should be 6");
+        assertEquals(8, column.getField(7).getFieldValue(), "Eighth field value should be 8");
+
+        column.getField(3).setFieldValue(4);
+        assertEquals(4, board.getValueAt(3, 5), "Board should reflect changes to column fields");
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            board.getColumn(-1);
+        }, "Negative column index should throw exception");
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            board.getColumn(9);
+        }, "Column index out of bounds should throw exception");
+    }
+
+    @Test
+    public void testGetBox() {
+        SudokuSolver solver = new BacktrackingSudokuSolver();
+        SudokuBoard board = new SudokuBoard(solver);
+
+        board.setValueAt(0, 3, 1); 
+        board.setValueAt(1, 4, 5); 
+        board.setValueAt(2, 5, 9); 
+
+        SudokuBox box = board.getBox(1, 0);
+
+        assertEquals(1, box.getField(0).getFieldValue(), "First field value should be 1");
+        assertEquals(5, box.getField(4).getFieldValue(), "Fifth field value should be 5");
+        assertEquals(9, box.getField(8).getFieldValue(), "Ninth field value should be 9");
+
+        box.getField(3).setFieldValue(7); 
+        assertEquals(7, board.getValueAt(1, 3), "Board should reflect changes to box fields");
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            board.getBox(-1, 0);
+        }, "Negative box index should throw exception");
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            board.getBox(3, 0);
+        }, "Box column index out of bounds should throw exception");
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            board.getBox(0, 3);
+        }, "Box row index out of bounds should throw exception");
+    }
+
+    @Test
+    public void testObserverPattern() {
+        SudokuSolver solver = new BacktrackingSudokuSolver();
+        SudokuBoard board = new SudokuBoard(solver);
+
+        final boolean[] valueChanged = {false};
+
+        board.getSudokuField(2, 3).addPropertyChangeListener(evt -> {
+            valueChanged[0] = true;
+        });
+
+        board.setValueAt(2, 3, 5);
+
+        assertTrue(valueChanged[0], "PropertyChangeListener should have been notified");
     }
 }

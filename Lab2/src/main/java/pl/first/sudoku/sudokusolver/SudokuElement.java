@@ -13,7 +13,6 @@ import java.util.List;
  *
  * @author zhuma
  */
-
 public abstract class SudokuElement implements Serializable, Cloneable {
     protected static final int SIZE = 9;
     protected List<SudokuField> fields;
