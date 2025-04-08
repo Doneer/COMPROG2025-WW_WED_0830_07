@@ -10,6 +10,7 @@ package pl.first.sudoku.sudokusolver;
  * It provides methods to generate and access a valid Sudoku board.
  * @author zhuma
  */
+
 public class SudokuBoard {
     private static final int BOARD_SIZE = 9;
     private static final int SUBSECTION_SIZE = 3;
