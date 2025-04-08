@@ -20,7 +20,7 @@ public class SudokuBoardTest {
     
     @Test
     public void testSolveGameGeneratesValidBoard() {
-        ISudokuSolver solver = new BacktrackingSudokuSolver();
+        SudokuSolver solver = new BacktrackingSudokuSolver();
         SudokuBoard board = new SudokuBoard(solver);
         
         boolean result = board.solveGame();
@@ -74,7 +74,7 @@ public class SudokuBoardTest {
     
     @Test
     public void testSubsequentSolveGameCallsGenerateDifferentLayouts() {
-        ISudokuSolver solver = new BacktrackingSudokuSolver();
+        SudokuSolver solver = new BacktrackingSudokuSolver();
         SudokuBoard board1 = new SudokuBoard(solver);
 
         assertTrue(board1.solveGame(), "First solving should be successful");
@@ -105,7 +105,7 @@ public class SudokuBoardTest {
     
     @Test
     public void testGetValueAtWithInvalidCoordinates() {
-        ISudokuSolver solver = new BacktrackingSudokuSolver();
+        SudokuSolver solver = new BacktrackingSudokuSolver();
         SudokuBoard board = new SudokuBoard(solver);
         board.solveGame();
         
@@ -132,7 +132,7 @@ public class SudokuBoardTest {
     
     @Test
     public void testSetValueAtWithInvalidValues() {
-        ISudokuSolver solver = new BacktrackingSudokuSolver();
+        SudokuSolver solver = new BacktrackingSudokuSolver();
         SudokuBoard board = new SudokuBoard(solver);
         
         //with negative value
@@ -165,7 +165,7 @@ public class SudokuBoardTest {
     
     @Test
     public void testIsValid() {
-        ISudokuSolver solver = new BacktrackingSudokuSolver();
+        SudokuSolver solver = new BacktrackingSudokuSolver();
         SudokuBoard board = new SudokuBoard(solver);
         
         assertTrue(board.isValid(), "Empty board should be valid");
@@ -193,7 +193,7 @@ public class SudokuBoardTest {
 
     @Test
     public void testFillBoardBackwardCompatibility() {
-        ISudokuSolver solver = new BacktrackingSudokuSolver();
+        SudokuSolver solver = new BacktrackingSudokuSolver();
         SudokuBoard board = new SudokuBoard(solver);
         
         assertTrue(board.fillBoard(), "fillBoard should work through backward compatibility");

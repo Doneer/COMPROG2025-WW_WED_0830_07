@@ -11,7 +11,7 @@ import java.util.Random;
  * @author Zhmaggernaut
  */
 
-public class BacktrackingSudokuSolver implements ISudokuSolver {
+public class BacktrackingSudokuSolver implements SudokuSolver {
     private static final int BOARD_SIZE = 9;
     private static final int SUBSECTION_SIZE = 3;
     private static final int BOARD_START_INDEX = 0;

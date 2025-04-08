@@ -16,9 +16,9 @@ public class SudokuBoard {
     private static final int NO_VALUE = 0;
     
     private int[][] board;
-    private ISudokuSolver solver;
+    private SudokuSolver solver;
     
-    public SudokuBoard(ISudokuSolver solver) {
+    public SudokuBoard(SudokuSolver solver) {
         this.board = new int[BOARD_SIZE][BOARD_SIZE];
         this.solver = solver;
     }

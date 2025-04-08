@@ -29,7 +29,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.release>21</maven.compiler.release>
-        <exec.mainClass>pl.first.sudoku.sudokusolver.SudokuSolver</exec.mainClass>
+        <exec.mainClass>pl.first.sudoku.sudokusolver.SudokuGame</exec.mainClass>
     </properties>
     
     <developers>
@@ -92,11 +92,11 @@
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>
-                <version>0.8.11</version>
+                <version>0.8.12</version>
                 <configuration> 
                     <excludes> 
                         <exclude>**/module-info.class</exclude>
-                        <exclude>**/SudokuSolver.class</exclude> 
+                        <exclude>**/SudokuGame.class</exclude> 
                     </excludes> 
                 </configuration>
                 <executions>
@@ -209,7 +209,7 @@
                         <configuration>
                             <excludes>
                                 <exclude>**/module-info.class</exclude>
-                                <exclude>**/SudokuSolver.class</exclude>
+                                <exclude>**/SudokuGame.class</exclude>
                             </excludes>
                         </configuration>
                     </reportSet>

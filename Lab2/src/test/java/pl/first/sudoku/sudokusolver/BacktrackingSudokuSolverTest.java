@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class BacktrackingSudokuSolverTest {
     @Test
     public void testSolve() {
-        ISudokuSolver solver = new BacktrackingSudokuSolver();
+        SudokuSolver solver = new BacktrackingSudokuSolver();
         SudokuBoard board = new SudokuBoard(solver);
         
         assertTrue(solver.solve(board), "Solving should be successful");
@@ -32,7 +32,7 @@ public class BacktrackingSudokuSolverTest {
 
     @Test
     public void testSolveWithPrefilledValues() {
-        ISudokuSolver solver = new BacktrackingSudokuSolver();
+        SudokuSolver solver = new BacktrackingSudokuSolver();
         SudokuBoard board = new SudokuBoard(solver);
 
         board.setValueAt(0, 0, 5);
@@ -52,8 +52,8 @@ public class BacktrackingSudokuSolverTest {
     
     @Test
     public void testRandomSolutions() {
-        ISudokuSolver solver1 = new BacktrackingSudokuSolver();
-        ISudokuSolver solver2 = new BacktrackingSudokuSolver();
+        SudokuSolver solver1 = new BacktrackingSudokuSolver();
+        SudokuSolver solver2 = new BacktrackingSudokuSolver();
         
         SudokuBoard board1 = new SudokuBoard(solver1);
         SudokuBoard board2 = new SudokuBoard(solver2);
