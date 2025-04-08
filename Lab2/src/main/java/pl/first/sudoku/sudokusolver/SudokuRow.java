@@ -8,10 +8,11 @@ package pl.first.sudoku.sudokusolver;
 import java.util.List;
 
 /**
- *
+ * Class representing a row in a Sudoku puzzle.
+ * A row consists of 9 SudokuField objects.
  * @author Zhmaggernaut
  */
-public class SudokuRow extends SudokuElement{
+public class SudokuRow extends SudokuElement {
     public SudokuRow(List<SudokuField> fields) {
         super(fields);
     }

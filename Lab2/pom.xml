@@ -5,7 +5,7 @@
     <artifactId>SudokuSolver</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
-    <description>Project #3 of laboratory group WW_WED_0830_07</description>
+    <description>Project #4 of laboratory group WW_WED_0830_07</description>
     <dependencies>
         <dependency>
             <groupId>org.junit.jupiter</groupId>

@@ -10,7 +10,8 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- *
+ * Abstract base class for Sudoku board elements (rows, columns, boxes).
+ * Provides common functionality for verifying element correctness.
  * @author zhuma
  */
 public abstract class SudokuElement implements Serializable, Cloneable {

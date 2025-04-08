@@ -10,7 +10,8 @@ import java.beans.PropertyChangeSupport;
 import java.io.Serializable;
 
 /**
- *
+ * Class representing a single field in a Sudoku puzzle.
+ * Contains the value and provides notification when value changes.
  * @author zhuma
  */
 public class SudokuField implements Serializable, Cloneable, Comparable<SudokuField> {
