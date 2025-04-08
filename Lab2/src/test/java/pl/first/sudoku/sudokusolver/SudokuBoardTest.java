@@ -300,4 +300,99 @@ public class SudokuBoardTest {
 
         assertTrue(valueChanged[0], "PropertyChangeListener should have been notified");
     }
+
+    @Test
+    public void testEquals() {
+        SudokuSolver solver = new BacktrackingSudokuSolver();
+        SudokuBoard board1 = new SudokuBoard(solver);
+        SudokuBoard board2 = new SudokuBoard(solver);
+
+        assertTrue(board1.equals(board1), "Board should equal itself");
+        assertTrue(board1.equals(board2), "Empty boards should be equal");
+        assertFalse(board1.equals(null), "Board should not equal null");
+        assertFalse(board1.equals("string"), "Board should not equal other types");
+
+        board1.setValueAt(0, 0, 5);
+        assertFalse(board1.equals(board2), "Boards with different values should not be equal");
+
+        board2.setValueAt(0, 0, 5);
+        assertTrue(board1.equals(board2), "Boards with same values should be equal");
+    }
+
+    @Test
+    public void testHashCode() {
+        SudokuSolver solver = new BacktrackingSudokuSolver();
+        SudokuBoard board1 = new SudokuBoard(solver);
+        SudokuBoard board2 = new SudokuBoard(solver);
+
+        assertEquals(board1.hashCode(), board2.hashCode(), "Empty boards should have same hash code");
+
+        board1.setValueAt(0, 0, 5);
+        assertNotEquals(board1.hashCode(), board2.hashCode(), "Different boards should have different hash codes");
+
+        board2.setValueAt(0, 0, 5);
+        assertEquals(board1.hashCode(), board2.hashCode(), "Same boards should have same hash code");
+    }
+
+    @Test
+    public void testToString() {
+        SudokuSolver solver = new BacktrackingSudokuSolver();
+        SudokuBoard board = new SudokuBoard(solver);
+
+        board.setValueAt(0, 0, 1);
+        board.setValueAt(1, 1, 2);
+
+        String result = board.toString();
+        assertNotNull(result, "toString should not return null");
+        assertTrue(result.contains("1"), "toString should contain the values in the board");
+        assertTrue(result.contains("2"), "toString should contain the values in the board");
+    }
+
+    @Test
+    public void testClone() {
+        SudokuSolver solver = new BacktrackingSudokuSolver();
+        SudokuBoard original = new SudokuBoard(solver);
+
+        original.setValueAt(0, 0, 5);
+        original.setValueAt(1, 1, 6);
+
+        SudokuBoard cloned = original.clone();
+
+        assertEquals(original.getValueAt(0, 0), cloned.getValueAt(0, 0), "Cloned board should have same values");
+        assertEquals(original.getValueAt(1, 1), cloned.getValueAt(1, 1), "Cloned board should have same values");
+
+        cloned.setValueAt(0, 0, 9);
+        assertEquals(5, original.getValueAt(0, 0), "Original should not be affected by clone changes");
+        assertEquals(9, cloned.getValueAt(0, 0), "Clone should have the new value");
+    }
+
+    @Test
+    public void testGetSudokuField() {
+        SudokuSolver solver = new BacktrackingSudokuSolver();
+        SudokuBoard board = new SudokuBoard(solver);
+
+        board.setValueAt(2, 3, 5);
+        SudokuField field = board.getSudokuField(2, 3);
+
+        assertEquals(5, field.getFieldValue(), "Field value should match");
+
+        field.setFieldValue(7);
+        assertEquals(7, board.getValueAt(2, 3), "Board should reflect field changes");
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            board.getSudokuField(-1, 0);
+        }, "Negative row should throw exception");
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            board.getSudokuField(0, -1);
+        }, "Negative column should throw exception");
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            board.getSudokuField(9, 0);
+        }, "Row out of bounds should throw exception");
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            board.getSudokuField(0, 9);
+        }, "Column out of bounds should throw exception");
+    }
 }

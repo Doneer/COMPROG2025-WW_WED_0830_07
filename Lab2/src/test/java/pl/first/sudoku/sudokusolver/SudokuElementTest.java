@@ -119,4 +119,41 @@ public class SudokuElementTest {
             new SudokuRow(tooFewFields);
         }, "Constructor should reject lists with wrong size");
     }
+    
+    @Test
+    public void testToStringWithValues() {
+        List<SudokuField> fields = new ArrayList<>();
+        for (int i = 0; i < 9; i++) {
+            SudokuField field = new SudokuField();
+            field.setFieldValue(i + 1); 
+            fields.add(field);
+        }
+
+        SudokuRow element = new SudokuRow(fields);
+        String str = element.toString();
+
+        for (int i = 1; i <= 9; i++) {
+            assertTrue(str.contains(String.valueOf(i)), 
+                    "toString should contain value " + i);
+        }
+    }
+
+    @Test
+    public void testEqualsEdgeCases() {
+        List<SudokuField> fields1 = new ArrayList<>();
+        for (int i = 0; i < 9; i++) {
+            fields1.add(new SudokuField());
+        }
+
+        SudokuRow row = new SudokuRow(fields1);
+
+        assertTrue(row.equals(row), "Element should equal itself");
+        assertFalse(row.equals(null), "Element should not equal null");
+        assertFalse(row.equals("string"), "Element should not equal other types");
+
+        List<SudokuField> fields2 = new ArrayList<>(fields1);
+        SudokuColumn column = new SudokuColumn(fields2);
+
+        assertFalse(row.equals(column), "Different element types should not be equal");
+    }
 }

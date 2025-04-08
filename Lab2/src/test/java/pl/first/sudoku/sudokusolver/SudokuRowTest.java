@@ -62,4 +62,55 @@ public class SudokuRowTest {
         fields.get(8).setFieldValue(5);
         assertFalse(row.verify(), "Row with duplicate values should be invalid");
     }
+    
+    @Test
+    public void testGetBoxOutOfBounds() {
+        SudokuSolver solver = new BacktrackingSudokuSolver();
+        SudokuBoard board = new SudokuBoard(solver);
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            board.getBox(-1, 0);
+        });
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            board.getBox(0, -1);
+        });
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            board.getBox(3, 0);
+        });
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            board.getBox(0, 3);
+        });
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            board.getBox(3, 3);
+        });
+    }
+
+    @Test
+    public void testCompleteBoxCoverage() {
+        SudokuSolver solver = new BacktrackingSudokuSolver();
+        SudokuBoard board = new SudokuBoard(solver);
+
+        int boxX = 1; 
+        int boxY = 0;
+
+        int startRow = boxY * 3;
+        int startCol = boxX * 3;
+
+        for (int row = 0; row < 3; row++) {
+            for (int col = 0; col < 3; col++) {
+                board.setValueAt(startRow + row, startCol + col, (row * 3 + col + 1));
+            }
+        }
+
+        SudokuBox box = board.getBox(boxX, boxY);
+
+        for (int i = 0; i < 9; i++) {
+            assertEquals(i + 1, box.getField(i).getFieldValue(), 
+                    "Box field " + i + " should have value " + (i + 1));
+        }
+    }
 }

@@ -89,15 +89,17 @@ public class SudokuFieldTest {
     public void testClone() {
         SudokuField original = new SudokuField();
         original.setFieldValue(5);
-        
+
         SudokuField clone = original.clone();
 
-        assertEquals(original, clone, "Cloned field should equal original");
-        assertEquals(original.getFieldValue(), clone.getFieldValue(), "Values should be the same");
+        assertEquals(original.getFieldValue(), clone.getFieldValue(), "Cloned field should have same value");
 
         clone.setFieldValue(8);
-        assertNotEquals(original.getFieldValue(), clone.getFieldValue(), "Changes to clone shouldn't affect original");
-        assertEquals(5, original.getFieldValue(), "Original value should remain unchanged");
+
+        assertEquals(5, original.getFieldValue(), "Original should not be affected by clone changes");
+        assertEquals(8, clone.getFieldValue(), "Clone should have the new value");
+
+        assertNotEquals(original, clone, "Modified clone should not be equal to original");
     }
     
     @Test
@@ -127,5 +129,23 @@ public class SudokuFieldTest {
         
         field.setFieldValue(8);
         assertFalse(propertyChanged[0], "PropertyChanged should still be false after listener removal");
+    }
+    
+    @Test
+    public void testEqualsEdgeCases() {
+        SudokuField field = new SudokuField();
+
+        assertTrue(field.equals(field), "Field should equal itself");
+        assertFalse(field.equals(null), "Field should not equal null");
+        assertFalse(field.equals("string"), "Field should not equal other types");
+
+        SudokuField another = new SudokuField();
+        assertTrue(field.equals(another), "Fields with same value should be equal");
+
+        field.setFieldValue(5);
+        assertFalse(field.equals(another), "Fields with different values should not be equal");
+
+        another.setFieldValue(5);
+        assertTrue(field.equals(another), "Fields with same value should be equal");
     }
 }
