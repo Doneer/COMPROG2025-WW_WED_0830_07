@@ -5,13 +5,14 @@
 
 package pl.first.sudoku.sudokusolver;
 
+import java.io.Serializable;
 import java.util.Random;
+
 /**
  * Implementation of the SudokuSolver interface using a backtracking algorithm.
  * @author Zhmaggernaut
  */
-
-public class BacktrackingSudokuSolver implements SudokuSolver {
+public class BacktrackingSudokuSolver implements SudokuSolver, Serializable {
     private static final int BOARD_SIZE = 9;
     private static final int SUBSECTION_SIZE = 3;
     private static final int BOARD_START_INDEX = 0;
@@ -77,40 +78,29 @@ public class BacktrackingSudokuSolver implements SudokuSolver {
     }
     
     private boolean isValidPlacement(SudokuBoard board, int row, int col, int value) {
-        return isRowValid(board, row, value) 
-                && isColumnValid(board, col, value) 
-                && isBoxValid(board, row, col, value);
-    }
-    
-    private boolean isRowValid(SudokuBoard board, int row, int value) {
-        for (int col = BOARD_START_INDEX; col < BOARD_SIZE; col++) {
-            if (board.getValueAt(row, col) == value) {
+        SudokuRow sudokuRow = board.getRow(row);
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            if (sudokuRow.getField(i).getFieldValue() == value) {
                 return false;
             }
         }
-        return true;
-    }
-    
-    private boolean isColumnValid(SudokuBoard board, int col, int value) {
-        for (int row = BOARD_START_INDEX; row < BOARD_SIZE; row++) {
-            if (board.getValueAt(row, col) == value) {
-                return false;
-            }
-        }
-        return true;
-    }
-    
-    private boolean isBoxValid(SudokuBoard board, int row, int col, int value) {
-        int boxRowStart = (row / SUBSECTION_SIZE) * SUBSECTION_SIZE;
-        int boxColStart = (col / SUBSECTION_SIZE) * SUBSECTION_SIZE;
         
-        for (int r = 0; r < SUBSECTION_SIZE; r++) {
-            for (int c = 0; c < SUBSECTION_SIZE; c++) {
-                if (board.getValueAt(boxRowStart + r, boxColStart + c) == value) {
-                    return false;
-                }
+        SudokuColumn sudokuColumn = board.getColumn(col);
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            if (sudokuColumn.getField(i).getFieldValue() == value) {
+                return false;
             }
         }
+        
+        int boxRow = row / SUBSECTION_SIZE;
+        int boxCol = col / SUBSECTION_SIZE;
+        SudokuBox sudokuBox = board.getBox(boxCol, boxRow);
+        for (int i = 0; i < BOARD_SIZE; i++) {
+            if (sudokuBox.getField(i).getFieldValue() == value) {
+                return false;
+            }
+        }
+        
         return true;
     }
 }
