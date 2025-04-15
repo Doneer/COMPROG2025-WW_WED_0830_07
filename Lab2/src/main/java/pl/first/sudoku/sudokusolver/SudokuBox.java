@@ -5,6 +5,7 @@
 
 package pl.first.sudoku.sudokusolver;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -17,8 +18,31 @@ public class SudokuBox extends SudokuElement {
         super(fields);
     }
     
+    public SudokuBox(SudokuBoard board, int x, int y) {
+        super(extractFields(board, x, y));
+    }
+    
+    private static List<SudokuField> extractFields(SudokuBoard board, int x, int y) {
+        if (x < 0 || x >= 3 || y < 0 || y >= 3) {
+            throw new IllegalArgumentException("Invalid box coordinates");
+        }
+        
+        List<SudokuField> fields = new ArrayList<>();
+        int startRow = y * 3;
+        int startCol = x * 3;
+        
+        for (int row = 0; row < 3; row++) {
+            for (int col = 0; col < 3; col++) {
+                fields.add(board.getSudokuField(startRow + row, startCol + col));
+            }
+        }
+        
+        return fields;
+    }
+    
     @Override
-    public SudokuBox clone() throws CloneNotSupportedException {
-        return (SudokuBox) super.clone();
+    public SudokuBox clone() {
+        SudokuBox cloned = (SudokuBox) super.clone();
+        return cloned;
     }
 }

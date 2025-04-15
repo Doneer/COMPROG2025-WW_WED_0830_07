@@ -113,4 +113,37 @@ public class SudokuRowTest {
                     "Box field " + i + " should have value " + (i + 1));
         }
     }
+    
+    @Test
+    public void testConstructorWithBoard() {
+        SudokuSolver solver = new BacktrackingSudokuSolver();
+        SudokuBoard board = new SudokuBoard(solver);
+
+        board.setValueAt(3, 0, 1);
+        board.setValueAt(3, 4, 5);
+        board.setValueAt(3, 8, 9);
+
+        SudokuRow row = new SudokuRow(board, 3);
+
+        assertEquals(1, row.getField(0).getFieldValue(), "First field value should be 1");
+        assertEquals(5, row.getField(4).getFieldValue(), "Fifth field value should be 5");
+        assertEquals(9, row.getField(8).getFieldValue(), "Ninth field value should be 9");
+
+        row.getField(2).setFieldValue(3);
+        assertEquals(3, board.getValueAt(3, 2), "Board should reflect changes to row fields");
+    }
+
+    @Test
+    public void testConstructorWithBoardInvalidIndex() {
+        SudokuSolver solver = new BacktrackingSudokuSolver();
+        SudokuBoard board = new SudokuBoard(solver);
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            new SudokuRow(board, -1);
+        }, "Negative index should throw exception");
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            new SudokuRow(board, 9);
+        }, "Index out of bounds should throw exception");
+    }
 }

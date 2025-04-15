@@ -113,4 +113,45 @@ public class SudokuBoxTest {
                     "Box field " + i + " should have value " + (i + 1));
         }
     }
+    
+    @Test
+    public void testConstructorWithBoard() {
+        SudokuSolver solver = new BacktrackingSudokuSolver();
+        SudokuBoard board = new SudokuBoard(solver);
+
+        board.setValueAt(0, 3, 1); 
+        board.setValueAt(1, 4, 5); 
+        board.setValueAt(2, 5, 9); 
+
+        SudokuBox box = new SudokuBox(board, 1, 0);
+
+        assertEquals(1, box.getField(0).getFieldValue(), "First field value should be 1");
+        assertEquals(5, box.getField(4).getFieldValue(), "Fifth field value should be 5");
+        assertEquals(9, box.getField(8).getFieldValue(), "Ninth field value should be 9");
+
+        box.getField(3).setFieldValue(7); 
+        assertEquals(7, board.getValueAt(1, 3), "Board should reflect changes to box fields");
+    }
+
+    @Test
+    public void testConstructorWithBoardInvalidIndices() {
+        SudokuSolver solver = new BacktrackingSudokuSolver();
+        SudokuBoard board = new SudokuBoard(solver);
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            new SudokuBox(board, -1, 0);
+        }, "Negative x index should throw exception");
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            new SudokuBox(board, 0, -1);
+        }, "Negative y index should throw exception");
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            new SudokuBox(board, 3, 0);
+        }, "X index out of bounds should throw exception");
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            new SudokuBox(board, 0, 3);
+        }, "Y index out of bounds should throw exception");
+    }
 }

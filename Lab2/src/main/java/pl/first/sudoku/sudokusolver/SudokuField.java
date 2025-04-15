@@ -76,7 +76,8 @@ public class SudokuField implements Serializable, Cloneable, Comparable<SudokuFi
         try {
             return (SudokuField) super.clone();
         } catch (CloneNotSupportedException e) {
-            throw new AssertionError();
+            //This exception is impossible if we properly implement Cloneable
+            throw new InternalError("Should not happen since we implement Cloneable", e);
         }
     }
 }

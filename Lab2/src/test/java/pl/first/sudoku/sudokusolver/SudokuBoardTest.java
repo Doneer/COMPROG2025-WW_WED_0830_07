@@ -356,7 +356,7 @@ public class SudokuBoardTest {
         original.setValueAt(0, 0, 5);
         original.setValueAt(1, 1, 6);
 
-        SudokuBoard cloned = original.clone();
+        SudokuBoard cloned = (SudokuBoard) original.clone();
 
         assertEquals(original.getValueAt(0, 0), cloned.getValueAt(0, 0), "Cloned board should have same values");
         assertEquals(original.getValueAt(1, 1), cloned.getValueAt(1, 1), "Cloned board should have same values");

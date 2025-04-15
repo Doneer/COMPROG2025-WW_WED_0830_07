@@ -6,7 +6,7 @@
 package pl.first.sudoku.sudokusolver;
 
 import java.io.Serializable;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -71,19 +71,17 @@ public abstract class SudokuElement implements Serializable, Cloneable {
     }
     
     @Override
-    public SudokuElement clone() throws CloneNotSupportedException {
-        SudokuElement cloned = (SudokuElement) super.clone();
-        cloned.fields = Arrays.asList(
-                fields.get(0).clone(),
-                fields.get(1).clone(),
-                fields.get(2).clone(),
-                fields.get(3).clone(),
-                fields.get(4).clone(),
-                fields.get(5).clone(),
-                fields.get(6).clone(),
-                fields.get(7).clone(),
-                fields.get(8).clone()
-        );
-        return cloned;
+    public SudokuElement clone() {
+        try {
+            SudokuElement cloned = (SudokuElement) super.clone();
+            cloned.fields = new ArrayList<>();
+            for (SudokuField field : fields) {
+                cloned.fields.add(field.clone());
+            }
+            return cloned;
+        } catch (CloneNotSupportedException e) {
+            //This should never happen since we implement Cloneable
+            throw new InternalError("Should not happen since we implement Cloneable", e);
+        }
     }
 }

@@ -17,7 +17,6 @@ public class BacktrackingSudokuSolver implements SudokuSolver, Serializable {
     private static final int SUBSECTION_SIZE = 3;
     private static final int BOARD_START_INDEX = 0;
     private static final int NO_VALUE = 0;
-    private static final int MIN_VALUE = 1;
     private static final int MAX_VALUE = 9;
     
     private Random random;
