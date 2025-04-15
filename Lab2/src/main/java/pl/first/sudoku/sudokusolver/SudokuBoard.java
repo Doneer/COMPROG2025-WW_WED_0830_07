@@ -6,6 +6,9 @@
 package pl.first.sudoku.sudokusolver;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * SudokuBoard class represents a 9x9 Sudoku puzzle board.
@@ -17,17 +20,19 @@ public class SudokuBoard implements Serializable, Cloneable {
     private static final int SUBSECTION_SIZE = 3;
     private static final int NO_VALUE = 0;
     
-    private SudokuField[][] board;
+    private List<List<SudokuField>> board;
     private SudokuSolver solver;
     
     public SudokuBoard(SudokuSolver solver) {
-        this.board = new SudokuField[BOARD_SIZE][BOARD_SIZE];
         this.solver = solver;
+        this.board = new ArrayList<>(BOARD_SIZE);
 
         for (int row = 0; row < BOARD_SIZE; row++) {
+            List<SudokuField> rowList = new ArrayList<>(BOARD_SIZE);
             for (int col = 0; col < BOARD_SIZE; col++) {
-                board[row][col] = new SudokuField();
+                rowList.add(new SudokuField());
             }
+            board.add(Collections.unmodifiableList(rowList));
         }
     }
     
@@ -39,7 +44,7 @@ public class SudokuBoard implements Serializable, Cloneable {
         if (row < 0 || row >= BOARD_SIZE || col < 0 || col >= BOARD_SIZE) {
             throw new IllegalArgumentException("Invalid board coordinates");
         }
-        return board[row][col].getFieldValue();
+        return board.get(row).get(col).getFieldValue();
     }
     
     public void setValueAt(int row, int col, int value) {
@@ -49,7 +54,7 @@ public class SudokuBoard implements Serializable, Cloneable {
         if (value < NO_VALUE || value > 9) {
             throw new IllegalArgumentException("Value must be between 0 and 9");
         }
-        board[row][col].setFieldValue(value);
+        board.get(row).get(col).setFieldValue(value);
     }
     
     public SudokuRow getRow(int y) {
@@ -96,7 +101,7 @@ public class SudokuBoard implements Serializable, Cloneable {
         if (row < 0 || row >= BOARD_SIZE || col < 0 || col >= BOARD_SIZE) {
             throw new IllegalArgumentException("Invalid board coordinates");
         }
-        return board[row][col];
+        return board.get(row).get(col);
     }
     
     @Override
@@ -104,7 +109,7 @@ public class SudokuBoard implements Serializable, Cloneable {
         StringBuilder result = new StringBuilder();
         for (int row = 0; row < BOARD_SIZE; row++) {
             for (int col = 0; col < BOARD_SIZE; col++) {
-                result.append(board[row][col].getFieldValue());
+                result.append(board.get(row).get(col).getFieldValue());
                 result.append(' ');
             }
             result.append('\n');
@@ -123,20 +128,20 @@ public class SudokuBoard implements Serializable, Cloneable {
         SudokuBoard other = (SudokuBoard) obj;
         for (int row = 0; row < BOARD_SIZE; row++) {
             for (int col = 0; col < BOARD_SIZE; col++) {
-                if (!board[row][col].equals(other.board[row][col])) {
+                if (!board.get(row).get(col).equals(other.board.get(row).get(col))) {
                     return false;
                 }
             }
         }
         return true;
     }
-    
+
     @Override
     public int hashCode() {
         int result = 17;
         for (int row = 0; row < BOARD_SIZE; row++) {
             for (int col = 0; col < BOARD_SIZE; col++) {
-                result = 31 * result + board[row][col].hashCode();
+                result = 31 * result + board.get(row).get(col).hashCode();
             }
         }
         return result;
@@ -146,17 +151,18 @@ public class SudokuBoard implements Serializable, Cloneable {
     public SudokuBoard clone() {
         try {
             SudokuBoard cloned = (SudokuBoard) super.clone();
-            cloned.board = new SudokuField[BOARD_SIZE][BOARD_SIZE];
+            cloned.board = new ArrayList<>(BOARD_SIZE);
 
             for (int row = 0; row < BOARD_SIZE; row++) {
+                List<SudokuField> rowList = new ArrayList<>(BOARD_SIZE);
                 for (int col = 0; col < BOARD_SIZE; col++) {
-                    cloned.board[row][col] = this.board[row][col].clone();
+                    rowList.add(this.board.get(row).get(col).clone());
                 }
+                cloned.board.add(Collections.unmodifiableList(rowList));
             }
 
             return cloned;
         } catch (CloneNotSupportedException e) {
-            //This should never happen since we implement Cloneable
             throw new InternalError("Should not happen since we implement Cloneable", e);
         }
     }

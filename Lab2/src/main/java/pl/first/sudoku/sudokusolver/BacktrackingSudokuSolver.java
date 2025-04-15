@@ -6,6 +6,9 @@
 package pl.first.sudoku.sudokusolver;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -60,19 +63,18 @@ public class BacktrackingSudokuSolver implements SudokuSolver, Serializable {
     }
     
     private int[] getShuffledValues() {
+        List<Integer> valuesList = new ArrayList<>(MAX_VALUE);
+        for (int i = 1; i <= MAX_VALUE; i++) {
+            valuesList.add(i);
+        }
+
+        Collections.shuffle(valuesList, random);
+
         int[] values = new int[MAX_VALUE];
-
         for (int i = 0; i < MAX_VALUE; i++) {
-            values[i] = i + 1;
+            values[i] = valuesList.get(i);
         }
 
-        for (int i = MAX_VALUE - 1; i > 0; i--) {
-            int j = random.nextInt(i + 1);
-            int temp = values[i];
-            values[i] = values[j];
-            values[j] = temp;
-        }
-        
         return values;
     }
     
