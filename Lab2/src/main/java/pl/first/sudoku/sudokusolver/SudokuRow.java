@@ -29,10 +29,11 @@
 
 package pl.first.sudoku.sudokusolver;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Class representing a row in a Sudoku puzzle.
