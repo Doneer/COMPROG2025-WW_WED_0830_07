@@ -31,6 +31,8 @@ package pl.first.sudoku.sudokusolver;
 
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 /**
  * Class representing a 3x3 box in a Sudoku puzzle.
@@ -68,6 +70,13 @@ public class SudokuBox extends SudokuElement {
         }
         
         return fields;
+    }
+    
+    @Override
+    public String toString() {
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+                .appendSuper(super.toString())
+                .toString();
     }
     
     @Override

@@ -32,6 +32,10 @@ package pl.first.sudoku.sudokusolver;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 /**
  * Abstract base class for Sudoku board elements (rows, columns, boxes).
@@ -94,7 +98,7 @@ public abstract class SudokuElement implements Serializable, Cloneable {
     
     @Override
     public String toString() {
-        return fields.toString();
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
     
     @Override
@@ -106,12 +110,12 @@ public abstract class SudokuElement implements Serializable, Cloneable {
             return false;
         }
         SudokuElement other = (SudokuElement) obj;
-        return fields.equals(other.fields);
+        return new EqualsBuilder().append(fields, other.fields).isEquals();
     }
     
     @Override
     public int hashCode() {
-        return fields.hashCode();
+        return new HashCodeBuilder(17, 37).append(fields).toHashCode();
     }
     
     @Override

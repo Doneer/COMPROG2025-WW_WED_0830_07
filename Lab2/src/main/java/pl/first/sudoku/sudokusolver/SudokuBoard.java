@@ -33,6 +33,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 /**
  * SudokuBoard class represents a 9x9 Sudoku puzzle board.
@@ -130,15 +134,7 @@ public class SudokuBoard implements Serializable, Cloneable {
     
     @Override
     public String toString() {
-        StringBuilder result = new StringBuilder();
-        for (int row = 0; row < BOARD_SIZE; row++) {
-            for (int col = 0; col < BOARD_SIZE; col++) {
-                result.append(board.get(row).get(col).getFieldValue());
-                result.append(' ');
-            }
-            result.append('\n');
-        }
-        return result.toString();
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.MULTI_LINE_STYLE);
     }
     
     @Override
@@ -150,25 +146,12 @@ public class SudokuBoard implements Serializable, Cloneable {
             return false;
         }
         SudokuBoard other = (SudokuBoard) obj;
-        for (int row = 0; row < BOARD_SIZE; row++) {
-            for (int col = 0; col < BOARD_SIZE; col++) {
-                if (!board.get(row).get(col).equals(other.board.get(row).get(col))) {
-                    return false;
-                }
-            }
-        }
-        return true;
+        return new EqualsBuilder().append(board, other.board).isEquals();
     }
 
     @Override
     public int hashCode() {
-        int result = 17;
-        for (int row = 0; row < BOARD_SIZE; row++) {
-            for (int col = 0; col < BOARD_SIZE; col++) {
-                result = 31 * result + board.get(row).get(col).hashCode();
-            }
-        }
-        return result;
+        return new HashCodeBuilder(17, 37).append(board).toHashCode();
     }
     
     @Override

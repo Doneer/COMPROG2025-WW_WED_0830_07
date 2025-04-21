@@ -32,6 +32,10 @@ package pl.first.sudoku.sudokusolver;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.io.Serializable;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.commons.lang3.builder.ToStringStyle;
 
 /**
  * Class representing a single field in a Sudoku puzzle.
@@ -70,24 +74,17 @@ public class SudokuField implements Serializable, Cloneable, Comparable<SudokuFi
     
     @Override
     public String toString() {
-        return Integer.toString(value);
+        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
     }
     
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null || getClass() != obj.getClass()) {
-            return false;
-        }
-        SudokuField other = (SudokuField) obj;
-        return value == other.value;
+        return EqualsBuilder.reflectionEquals(this, obj);
     }
     
     @Override
     public int hashCode() {
-        return Integer.hashCode(value);
+        return HashCodeBuilder.reflectionHashCode(this);
     }
     
     @Override
