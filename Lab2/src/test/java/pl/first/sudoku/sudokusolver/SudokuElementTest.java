@@ -111,15 +111,43 @@ public class SudokuElementTest {
     
     @Test
     public void testHashCode() {
-        SudokuRow element2 = new SudokuRow(fields);
-        assertEquals(element.hashCode(), element2.hashCode(), "Hash codes of equal elements should match");
+        List<SudokuField> fields1 = new ArrayList<>();
+        List<SudokuField> fields2 = new ArrayList<>();
+
+        for (int i = 0; i < 9; i++) {
+            SudokuField field1 = new SudokuField();
+            SudokuField field2 = new SudokuField();
+
+            field1.setFieldValue(i + 1);
+            field2.setFieldValue(i + 1);
+
+            fields1.add(field1);
+            fields2.add(field2);
+        }
+
+        SudokuRow row1 = new SudokuRow(fields1);
+        SudokuRow row2 = new SudokuRow(fields2);
+
+        assertEquals(row1.hashCode(), row2.hashCode(), "Equal objects should have same hash code");
+
+        fields2.get(3).setFieldValue(8);
+        assertNotEquals(row1.hashCode(), row2.hashCode(), "Different objects should have different hash codes");
     }
     
     @Test
     public void testToString() {
-        String str = element.toString();
-        assertNotNull(str, "toString should return a non-null string");
-        assertTrue(str.contains("0"), "String should contain field values");
+        List<SudokuField> fields = new ArrayList<>();
+        for (int i = 0; i < 9; i++) {
+            SudokuField field = new SudokuField();
+            field.setFieldValue(i + 1);
+            fields.add(field);
+        }
+
+        SudokuRow element = new SudokuRow(fields);
+        String result = element.toString();
+
+        assertNotNull(result, "toString should not return null");
+        assertTrue(result.contains("fields"), "toString should contain field information");
     }
     
     @Test
@@ -278,7 +306,6 @@ public class SudokuElementTest {
       
     @Test
     public void testEqualsAndHashCodeConsistency() {
-        // Create two lists of fields with identical values
         List<SudokuField> fields1 = new ArrayList<>();
         List<SudokuField> fields2 = new ArrayList<>();
 
@@ -296,19 +323,102 @@ public class SudokuElementTest {
         SudokuRow row1 = new SudokuRow(fields1);
         SudokuRow row2 = new SudokuRow(fields2);
 
-        // Test reflexivity
         assertTrue(row1.equals(row1), "Object should equal itself");
 
-        // Test symmetry
         assertTrue(row1.equals(row2), "Equal objects should be equal");
         assertTrue(row2.equals(row1), "Equal objects should be equal (symmetry)");
 
-        // Test hashCode
         assertEquals(row1.hashCode(), row2.hashCode(), "Equal objects should have same hash code");
 
-        // Test with changes
         fields2.get(3).setFieldValue(8);
         assertFalse(row1.equals(row2), "Objects with different values should not be equal");
         assertNotEquals(row1.hashCode(), row2.hashCode(), "Different objects should have different hash codes");
+    }
+    
+    @Test
+    public void testElementToString() {
+        List<SudokuField> testFields = new ArrayList<>();
+        for (int i = 0; i < 9; i++) {
+            SudokuField field = new SudokuField();
+            field.setFieldValue(i + 1);
+            testFields.add(field);
+        }
+
+        SudokuElement element = new SudokuElement(testFields) {
+            @Override
+            protected List<SudokuField> extractFields(SudokuBoard board, int index) {
+                return new ArrayList<>(testFields);
+            }
+        };
+
+        String result = element.toString();
+
+        assertNotNull(result, "toString should not return null");
+        assertTrue(result.contains("fields"), "toString should contain field information");
+    }
+    
+    @Test
+    public void testEqualsWithDifferentFieldSize() throws Exception {
+        final List<SudokuField> fields1 = new ArrayList<>();
+        for (int i = 0; i < 9; i++) {
+            fields1.add(new SudokuField());
+        }
+
+        class TestElement extends SudokuElement {
+            private final List<SudokuField> testFields;
+
+            public TestElement(List<SudokuField> fields) {
+                super(fields);
+                this.testFields = fields;
+            }
+
+            @Override
+            protected List<SudokuField> extractFields(SudokuBoard board, int index) {
+                return new ArrayList<>(testFields);
+            }
+        }
+
+        TestElement element1 = new TestElement(fields1);
+
+        List<SudokuField> fields2 = new ArrayList<>(fields1);
+
+        TestElement element2 = new TestElement(fields2);
+
+        java.lang.reflect.Field fieldsField = SudokuElement.class.getDeclaredField("fields");
+        fieldsField.setAccessible(true);
+
+        List<SudokuField> modifiedFields = new ArrayList<>(fields2);
+        modifiedFields.remove(0); 
+
+        fieldsField.set(element2, modifiedFields);
+
+        assertFalse(element1.equals(element2), "Elements with different field sizes should not be equal");
+    }
+    
+    @Test
+    public void testEqualsWithIdenticalFields() {
+        final List<SudokuField> commonFields = new ArrayList<>();
+        for (int i = 0; i < 9; i++) {
+            SudokuField field = new SudokuField();
+            field.setFieldValue(i + 1);
+            commonFields.add(field);
+        }
+
+        class TestElement extends SudokuElement {
+            public TestElement() {
+                super(commonFields);
+            }
+
+            @Override
+            protected List<SudokuField> extractFields(SudokuBoard board, int index) {
+                return new ArrayList<>(commonFields);
+            }
+        }
+
+        SudokuElement element1 = new TestElement();
+        SudokuElement element2 = new TestElement();
+
+        assertTrue(element1.equals(element2), "Elements with identical field objects should be equal");
+        assertEquals(element1.hashCode(), element2.hashCode(), "Equal elements should have same hash code");
     }
 }

@@ -204,4 +204,20 @@ public class SudokuBoxTest {
             }
         });
     }
+    
+    @Test
+    public void testToString() {
+        List<SudokuField> fields = new ArrayList<>();
+        for (int i = 0; i < 9; i++) {
+            SudokuField field = new SudokuField();
+            field.setFieldValue(i + 1);
+            fields.add(field);
+        }
+
+        SudokuBox box = new SudokuBox(fields);
+        String result = box.toString();
+
+        assertNotNull(result, "toString should not return null");
+        assertTrue(result.contains("fields"), "toString should contain field information");
+    }
 }

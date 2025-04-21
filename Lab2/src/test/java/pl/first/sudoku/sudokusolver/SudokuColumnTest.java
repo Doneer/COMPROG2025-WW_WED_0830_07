@@ -170,4 +170,20 @@ public class SudokuColumnTest {
             new SudokuColumn(board, 9);
         }, "Index out of bounds should throw exception");
     }
+    
+    @Test
+    public void testToString() {
+        List<SudokuField> fields = new ArrayList<>();
+        for (int i = 0; i < 9; i++) {
+            SudokuField field = new SudokuField();
+            field.setFieldValue(i + 1);
+            fields.add(field);
+        }
+
+        SudokuColumn column = new SudokuColumn(fields);
+        String result = column.toString();
+
+        assertNotNull(result, "toString should not return null");
+        assertTrue(result.contains("fields"), "toString should contain field information");
+    }
 }
