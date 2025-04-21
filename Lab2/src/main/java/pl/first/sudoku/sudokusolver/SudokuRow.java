@@ -65,7 +65,7 @@ public class SudokuRow extends SudokuElement {
     @Override
     public String toString() {
         return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
-                .appendSuper(super.toString())
+                .append("fields", fields)
                 .toString();
     }
     

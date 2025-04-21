@@ -32,8 +32,6 @@ package pl.first.sudoku.sudokusolver;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
@@ -98,7 +96,9 @@ public abstract class SudokuElement implements Serializable, Cloneable {
     
     @Override
     public String toString() {
-        return ToStringBuilder.reflectionToString(this, ToStringStyle.SHORT_PREFIX_STYLE);
+        return new ToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE)
+            .append("fields", fields)
+            .toString();
     }
     
     @Override
@@ -110,12 +110,27 @@ public abstract class SudokuElement implements Serializable, Cloneable {
             return false;
         }
         SudokuElement other = (SudokuElement) obj;
-        return new EqualsBuilder().append(fields, other.fields).isEquals();
+
+        if (fields.size() != other.fields.size()) {
+            return false;
+        }
+
+        for (int i = 0; i < fields.size(); i++) {
+            if (!fields.get(i).equals(other.fields.get(i))) {
+                return false;
+            }
+        }
+
+        return true;
     }
     
     @Override
     public int hashCode() {
-        return new HashCodeBuilder(17, 37).append(fields).toHashCode();
+        int result = 17;
+        for (SudokuField field : fields) {
+            result = 31 * result + field.hashCode();
+        }
+        return result;
     }
     
     @Override
