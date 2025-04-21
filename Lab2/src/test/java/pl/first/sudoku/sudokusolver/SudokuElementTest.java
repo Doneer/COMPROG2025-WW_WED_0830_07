@@ -275,4 +275,33 @@ public class SudokuElementTest {
             };
         });
     }
+    
+    @Test   
+    public void testEqualsAndHashCodeConsistency() {
+        List<SudokuField> fields1 = new ArrayList<>();
+        List<SudokuField> fields2 = new ArrayList<>();
+
+        for (int i = 0; i < 9; i++) {
+            SudokuField field1 = new SudokuField();
+            SudokuField field2 = new SudokuField();
+
+            field1.setFieldValue(i + 1);
+            field2.setFieldValue(i + 1);
+
+            fields1.add(field1);
+            fields2.add(field2);
+        }
+
+        SudokuRow row1 = new SudokuRow(fields1);
+        SudokuRow row2 = new SudokuRow(fields2);
+
+        assertTrue(row1.equals(row2), "Equal objects should be equal");
+        assertTrue(row2.equals(row1), "Equals should be symmetric");
+        assertEquals(row1.hashCode(), row2.hashCode(), "Equal objects should have same hash code");
+
+        fields2.get(3).setFieldValue(7);
+
+        assertFalse(row1.equals(row2), "Modified objects should not be equal");
+        assertNotEquals(row1.hashCode(), row2.hashCode(), "Different objects should have different hash codes");
+    }
 }

@@ -172,4 +172,25 @@ public class SudokuFieldTest {
         another.setFieldValue(5);
         assertTrue(field.equals(another), "Fields with same value should be equal");
     }
+    
+    @Test
+    public void testEqualsAndHashCodeConsistency() {
+        SudokuField field1 = new SudokuField();
+        SudokuField field2 = new SudokuField();
+
+        assertTrue(field1.equals(field2), "Equal fields should be equal");
+        assertTrue(field2.equals(field1), "Equals should be symmetric");
+        assertEquals(field1.hashCode(), field2.hashCode(), "Equal fields should have same hash code");
+
+        field1.setFieldValue(5);
+        field2.setFieldValue(5);
+
+        assertTrue(field1.equals(field2), "Equal fields should be equal");
+        assertEquals(field1.hashCode(), field2.hashCode(), "Equal fields should have same hash code");
+
+        field2.setFieldValue(7);
+
+        assertFalse(field1.equals(field2), "Different fields should not be equal");
+        assertNotEquals(field1.hashCode(), field2.hashCode(), "Different fields should have different hash codes");
+    }
 }
