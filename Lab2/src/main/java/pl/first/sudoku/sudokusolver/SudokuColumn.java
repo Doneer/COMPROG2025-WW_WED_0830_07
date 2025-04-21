@@ -43,10 +43,11 @@ public class SudokuColumn extends SudokuElement {
     }
     
     public SudokuColumn(SudokuBoard board, int x) {
-        super(extractFields(board, x));
+        super(board, x);
     }
     
-    private static List<SudokuField> extractFields(SudokuBoard board, int x) {
+    @Override
+    protected List<SudokuField> extractFields(SudokuBoard board, int x) {
         if (x < 0 || x >= 9) {
             throw new IllegalArgumentException("Invalid column index");
         }

@@ -29,11 +29,16 @@
 
 package pl.first.sudoku.sudokusolver;
 
+import java.util.Arrays;
 import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import java.lang.reflect.Method;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  *
@@ -179,5 +184,95 @@ public class SudokuElementTest {
         SudokuColumn column = new SudokuColumn(fields2);
 
         assertFalse(row.equals(column), "Different element types should not be equal");
+    }
+    
+    @Test
+    public void testExtractFieldsWithTwoParametersThrowsException() {
+        List<SudokuField> fields = new ArrayList<>();
+        for (int i = 0; i < 9; i++) {
+            fields.add(new SudokuField());
+        }
+
+        SudokuRow row = new SudokuRow(fields);
+
+        try {
+            Method method = SudokuElement.class.getDeclaredMethod("extractFields", 
+                    SudokuBoard.class, int.class, int.class);
+            method.setAccessible(true);
+            method.invoke(row, null, 0, 0);
+            fail("Expected UnsupportedOperationException to be thrown");
+        } catch (InvocationTargetException e) {
+            assertTrue(e.getCause() instanceof UnsupportedOperationException,
+                    "Expected UnsupportedOperationException but got " + e.getCause());
+        } catch (Exception e) {
+            fail("Unexpected exception: " + e);
+        }
+    }
+
+    @Test
+    public void testConstructorWithTooFewFields() {
+        List<SudokuField> tooFewFields = new ArrayList<>();
+        for (int i = 0; i < 8; i++) { 
+            tooFewFields.add(new SudokuField());
+        }
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            new SudokuRow(tooFewFields);
+        });
+    }
+
+    @Test
+    public void testConstructorWithTooManyFields() {
+        List<SudokuField> tooManyFields = new ArrayList<>();
+        for (int i = 0; i < 10; i++) { // 10 fields
+            tooManyFields.add(new SudokuField());
+        }
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            new SudokuRow(tooManyFields);
+        });
+    }
+    
+    @Test
+    public void testConstructorWithIndexWithInvalidSizeFromExtractFields() {
+        SudokuSolver solver = new BacktrackingSudokuSolver();
+        SudokuBoard board = new SudokuBoard(solver);
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            new SudokuElement(board, 0) {
+                @Override
+                protected List<SudokuField> extractFields(SudokuBoard b, int index) {
+                    List<SudokuField> fields = new ArrayList<>();
+                    for (int i = 0; i < 7; i++) {
+                        fields.add(new SudokuField());
+                    }
+                    return fields;
+                }
+            };
+        });
+    }
+
+    @Test
+    public void testConstructorWithXYWithInvalidSizeFromExtractFields() {
+        SudokuSolver solver = new BacktrackingSudokuSolver();
+        SudokuBoard board = new SudokuBoard(solver);
+
+        assertThrows(IllegalArgumentException.class, () -> {
+            new SudokuElement(board, 0, 0) {
+                @Override
+                protected List<SudokuField> extractFields(SudokuBoard b, int index) {
+                    return new ArrayList<>(Arrays.asList(new SudokuField())); 
+                }
+
+                @Override
+                protected List<SudokuField> extractFields(SudokuBoard b, int x, int y) {
+                    List<SudokuField> fields = new ArrayList<>();
+                    for (int i = 0; i < 10; i++) {
+                        fields.add(new SudokuField());
+                    }
+                    return fields;
+                }
+            };
+        });
     }
 }

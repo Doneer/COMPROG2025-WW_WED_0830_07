@@ -43,10 +43,11 @@ public class SudokuRow extends SudokuElement {
     }
     
     public SudokuRow(SudokuBoard board, int y) {
-        super(extractFields(board, y));
+        super(board, y);
     }
     
-    private static List<SudokuField> extractFields(SudokuBoard board, int y) {
+    @Override
+    protected List<SudokuField> extractFields(SudokuBoard board, int y) {
         if (y < 0 || y >= 9) {
             throw new IllegalArgumentException("Invalid row index");
         }

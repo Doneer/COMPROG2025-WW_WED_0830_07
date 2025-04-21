@@ -42,11 +42,31 @@ public abstract class SudokuElement implements Serializable, Cloneable {
     protected static final int SIZE = 9;
     protected List<SudokuField> fields;
     
+    protected abstract List<SudokuField> extractFields(SudokuBoard board, int index);
+    
+     protected List<SudokuField> extractFields(SudokuBoard board, int x, int y) {
+        throw new UnsupportedOperationException("This method should be overridden by classes that need two indices");
+    }
+    
     public SudokuElement(List<SudokuField> fields) {
         if (fields.size() != SIZE) {
             throw new IllegalArgumentException("SudokuElement must contain exactly 9 fields");
         }
         this.fields = fields;
+    }
+    
+    protected SudokuElement(SudokuBoard board, int index) {
+        this.fields = extractFields(board, index);
+        if (this.fields.size() != SIZE) {
+            throw new IllegalArgumentException("SudokuElement must contain exactly 9 fields");
+        }
+    }
+    
+    protected SudokuElement(SudokuBoard board, int x, int y) {
+        this.fields = extractFields(board, x, y);
+        if (this.fields.size() != SIZE) {
+            throw new IllegalArgumentException("SudokuElement must contain exactly 9 fields");
+        }
     }
     
     public boolean verify() {

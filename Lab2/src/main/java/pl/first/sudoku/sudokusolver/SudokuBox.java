@@ -43,10 +43,16 @@ public class SudokuBox extends SudokuElement {
     }
     
     public SudokuBox(SudokuBoard board, int x, int y) {
-        super(extractFields(board, x, y));
+        super(board, x, y);
     }
     
-    private static List<SudokuField> extractFields(SudokuBoard board, int x, int y) {
+    @Override
+    protected List<SudokuField> extractFields(SudokuBoard board, int index) {
+        throw new UnsupportedOperationException("Box extraction requires both x and y indices");
+    }
+    
+    @Override
+    protected List<SudokuField> extractFields(SudokuBoard board, int x, int y) {
         if (x < 0 || x >= 3 || y < 0 || y >= 3) {
             throw new IllegalArgumentException("Invalid box coordinates");
         }

@@ -33,6 +33,10 @@ import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
+import java.lang.reflect.Method;
+import java.lang.reflect.InvocationTargetException;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 /**
  * Implementation of the SudokuSolver interface using a backtracking algorithm.
@@ -177,5 +181,30 @@ public class SudokuBoxTest {
         assertThrows(IllegalArgumentException.class, () -> {
             new SudokuBox(board, 0, 3);
         }, "Y index out of bounds should throw exception");
+    }
+    
+    @Test
+    public void testExtractFieldsWithSingleIndexThrowsException() {
+        SudokuSolver solver = new BacktrackingSudokuSolver();
+        SudokuBoard board = new SudokuBoard(solver);
+        SudokuBox box = new SudokuBox(board, 0, 0);
+
+        // Test that calling the single-parameter extractFields method throws UnsupportedOperationException
+        assertThrows(UnsupportedOperationException.class, () -> {
+            try {
+                Method method = SudokuElement.class.getDeclaredMethod("extractFields", 
+                        SudokuBoard.class, int.class);
+                method.setAccessible(true);
+                method.invoke(box, board, 0);
+                fail("Expected UnsupportedOperationException");
+            } catch (InvocationTargetException e) {
+                // If the cause is UnsupportedOperationException, rethrow it directly
+                if (e.getCause() instanceof UnsupportedOperationException) {
+                    throw (UnsupportedOperationException) e.getCause();
+                }
+                // Otherwise, unexpected exception
+                throw new RuntimeException("Unexpected exception", e);
+            }
+        });
     }
 }
