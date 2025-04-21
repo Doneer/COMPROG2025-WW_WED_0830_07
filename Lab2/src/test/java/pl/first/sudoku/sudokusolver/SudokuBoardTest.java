@@ -420,25 +420,29 @@ public class SudokuBoardTest {
         }, "Column out of bounds should throw exception");
     }
     
-    @Test
+   @Test
     public void testEqualsAndHashCodeConsistency() {
         SudokuSolver solver = new BacktrackingSudokuSolver();
         SudokuBoard board1 = new SudokuBoard(solver);
         SudokuBoard board2 = new SudokuBoard(solver);
 
-        assertTrue(board1.equals(board2), "Equal boards should be equal");
-        assertTrue(board2.equals(board1), "Equals should be symmetric");
+        // Test reflexivity
+        assertTrue(board1.equals(board1), "Board should equal itself");
+
+        // Test empty boards
+        assertTrue(board1.equals(board2), "Empty boards should be equal");
+        assertTrue(board2.equals(board1), "Empty boards should be equal (symmetry)");
         assertEquals(board1.hashCode(), board2.hashCode(), "Equal boards should have same hash code");
 
+        // Test with same values
         board1.setValueAt(0, 0, 5);
         board2.setValueAt(0, 0, 5);
-
-        assertTrue(board1.equals(board2), "Equal boards should be equal");
+        assertTrue(board1.equals(board2), "Boards with same values should be equal");
         assertEquals(board1.hashCode(), board2.hashCode(), "Equal boards should have same hash code");
 
+        // Test with different values
         board2.setValueAt(1, 1, 7);
-
-        assertFalse(board1.equals(board2), "Different boards should not be equal");
+        assertFalse(board1.equals(board2), "Boards with different values should not be equal");
         assertNotEquals(board1.hashCode(), board2.hashCode(), "Different boards should have different hash codes");
     }
 }

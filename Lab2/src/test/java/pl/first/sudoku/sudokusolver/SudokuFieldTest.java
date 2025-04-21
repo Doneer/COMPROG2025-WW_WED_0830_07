@@ -178,19 +178,23 @@ public class SudokuFieldTest {
         SudokuField field1 = new SudokuField();
         SudokuField field2 = new SudokuField();
 
-        assertTrue(field1.equals(field2), "Equal fields should be equal");
-        assertTrue(field2.equals(field1), "Equals should be symmetric");
+        // Test reflexivity
+        assertTrue(field1.equals(field1), "Field should equal itself");
+
+        // Test with default values
+        assertTrue(field1.equals(field2), "Fields with same value should be equal");
+        assertTrue(field2.equals(field1), "Fields with same value should be equal (symmetry)");
         assertEquals(field1.hashCode(), field2.hashCode(), "Equal fields should have same hash code");
 
+        // Test with same non-default values
         field1.setFieldValue(5);
         field2.setFieldValue(5);
-
-        assertTrue(field1.equals(field2), "Equal fields should be equal");
+        assertTrue(field1.equals(field2), "Fields with same value should be equal");
         assertEquals(field1.hashCode(), field2.hashCode(), "Equal fields should have same hash code");
 
+        // Test with different values
         field2.setFieldValue(7);
-
-        assertFalse(field1.equals(field2), "Different fields should not be equal");
+        assertFalse(field1.equals(field2), "Fields with different values should not be equal");
         assertNotEquals(field1.hashCode(), field2.hashCode(), "Different fields should have different hash codes");
     }
 }

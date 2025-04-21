@@ -275,9 +275,10 @@ public class SudokuElementTest {
             };
         });
     }
-    
-    @Test   
+      
+    @Test
     public void testEqualsAndHashCodeConsistency() {
+        // Create two lists of fields with identical values
         List<SudokuField> fields1 = new ArrayList<>();
         List<SudokuField> fields2 = new ArrayList<>();
 
@@ -295,13 +296,19 @@ public class SudokuElementTest {
         SudokuRow row1 = new SudokuRow(fields1);
         SudokuRow row2 = new SudokuRow(fields2);
 
+        // Test reflexivity
+        assertTrue(row1.equals(row1), "Object should equal itself");
+
+        // Test symmetry
         assertTrue(row1.equals(row2), "Equal objects should be equal");
-        assertTrue(row2.equals(row1), "Equals should be symmetric");
+        assertTrue(row2.equals(row1), "Equal objects should be equal (symmetry)");
+
+        // Test hashCode
         assertEquals(row1.hashCode(), row2.hashCode(), "Equal objects should have same hash code");
 
-        fields2.get(3).setFieldValue(7);
-
-        assertFalse(row1.equals(row2), "Modified objects should not be equal");
+        // Test with changes
+        fields2.get(3).setFieldValue(8);
+        assertFalse(row1.equals(row2), "Objects with different values should not be equal");
         assertNotEquals(row1.hashCode(), row2.hashCode(), "Different objects should have different hash codes");
     }
 }
