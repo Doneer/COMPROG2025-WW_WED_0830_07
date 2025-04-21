@@ -189,7 +189,6 @@ public class SudokuBoxTest {
         SudokuBoard board = new SudokuBoard(solver);
         SudokuBox box = new SudokuBox(board, 0, 0);
 
-        // Test that calling the single-parameter extractFields method throws UnsupportedOperationException
         assertThrows(UnsupportedOperationException.class, () -> {
             try {
                 Method method = SudokuElement.class.getDeclaredMethod("extractFields", 
@@ -198,11 +197,9 @@ public class SudokuBoxTest {
                 method.invoke(box, board, 0);
                 fail("Expected UnsupportedOperationException");
             } catch (InvocationTargetException e) {
-                // If the cause is UnsupportedOperationException, rethrow it directly
                 if (e.getCause() instanceof UnsupportedOperationException) {
                     throw (UnsupportedOperationException) e.getCause();
                 }
-                // Otherwise, unexpected exception
                 throw new RuntimeException("Unexpected exception", e);
             }
         });
