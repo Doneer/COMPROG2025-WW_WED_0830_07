@@ -29,39 +29,37 @@
 
 package pl.first.sudoku.sudokusolver;
 
+import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+
+import java.io.FileNotFoundException;
+import java.net.URL;
+
 /**
  * Check the checkstyle file command - checkstyle:check.
+ * Run program via Run Maven -> JavaFX Run.
  * @author zhuma
  */
-public class SudokuGame {
-    public static void main(String[] args) {
-        System.out.println("Sudoku Solver Demo");
-        
-        SudokuSolver solver = new BacktrackingSudokuSolver();
-        SudokuBoard board = new SudokuBoard(solver);
-        
-        if (board.solveGame()) {
-            System.out.println("Successfully filled Sudoku board:");
-            printBoard(board);
-        } else {
-            System.out.println("Failed to fill Sudoku board");
+public class SudokuGame extends Application {
+    @Override
+    public void start(Stage primaryStage) throws Exception {
+        URL url = getClass().getResource("/pl/first/sudoku/view/SudokuBoardView.fxml");
+        if (url == null) {
+            System.err.println("Cannot find FXML file at: /pl/first/sudoku/view/SudokuBoardView.fxml");
+            throw new FileNotFoundException("FXML file not found");
         }
+        Parent root = FXMLLoader.load(url);
+        Scene scene = new Scene(root);
+
+        primaryStage.setTitle("Sudoku Game");
+        primaryStage.setScene(scene);
+        primaryStage.show();
     }
     
-    private static void printBoard(SudokuBoard board) {
-        for (int row = 0; row < 9; row++) {
-            if (row % 3 == 0 && row != 0) {
-                System.out.println("------+-------+------");
-            }
-            
-            for (int col = 0; col < 9; col++) {
-                if (col % 3 == 0 && col != 0) {
-                    System.out.print("| ");
-                }
-                
-                System.out.print(board.getValueAt(row, col) + " ");
-            }
-            System.out.println();
-        }
+    public static void main(String[] args) {
+        launch(args);
     }
 }
