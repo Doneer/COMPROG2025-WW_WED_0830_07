@@ -59,4 +59,11 @@
                 <goal>javafx:run</goal>
             </goals>
         </action>
+        <action>
+            <actionName>CUSTOM-Create a site</actionName>
+            <displayName>Create a site</displayName>
+            <goals>
+                <goal>site</goal>
+            </goals>
+        </action>
     </actions>

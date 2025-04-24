@@ -29,12 +29,13 @@
 
 package pl.first.sudoku.sudokusolver;
 
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -47,20 +48,23 @@ public class SudokuBoard implements Serializable, Cloneable {
     private static final int SUBSECTION_SIZE = 3;
     private static final int NO_VALUE = 0;
     
-    private List<List<SudokuField>> board;
+    private List<SudokuField> board;
     private SudokuSolver solver;
     
     public SudokuBoard(SudokuSolver solver) {
         this.solver = solver;
-        this.board = new ArrayList<>(BOARD_SIZE);
+        this.board = new ArrayList<>(BOARD_SIZE * BOARD_SIZE);
 
-        for (int row = 0; row < BOARD_SIZE; row++) {
-            List<SudokuField> rowList = new ArrayList<>(BOARD_SIZE);
-            for (int col = 0; col < BOARD_SIZE; col++) {
-                rowList.add(new SudokuField());
-            }
-            board.add(Collections.unmodifiableList(rowList));
+        for (int i = 0; i < BOARD_SIZE * BOARD_SIZE; i++) {
+            board.add(new SudokuField());
         }
+    }
+    
+    private int getIndex(int row, int col) {
+        if (row < 0 || row >= BOARD_SIZE || col < 0 || col >= BOARD_SIZE) {
+            throw new IllegalArgumentException("Invalid board coordinates");
+        }
+        return row * BOARD_SIZE + col;
     }
     
     public boolean solveGame() {
@@ -68,20 +72,14 @@ public class SudokuBoard implements Serializable, Cloneable {
     }
     
     public int getValueAt(int row, int col) {
-        if (row < 0 || row >= BOARD_SIZE || col < 0 || col >= BOARD_SIZE) {
-            throw new IllegalArgumentException("Invalid board coordinates");
-        }
-        return board.get(row).get(col).getFieldValue();
+        return board.get(getIndex(row, col)).getFieldValue();
     }
-    
+
     public void setValueAt(int row, int col, int value) {
-        if (row < 0 || row >= BOARD_SIZE || col < 0 || col >= BOARD_SIZE) {
-            throw new IllegalArgumentException("Invalid board coordinates");
-        }
         if (value < NO_VALUE || value > 9) {
             throw new IllegalArgumentException("Value must be between 0 and 9");
         }
-        board.get(row).get(col).setFieldValue(value);
+        board.get(getIndex(row, col)).setFieldValue(value);
     }
     
     public SudokuRow getRow(int y) {
@@ -125,63 +123,34 @@ public class SudokuBoard implements Serializable, Cloneable {
     }
     
     public SudokuField getSudokuField(int row, int col) {
-        if (row < 0 || row >= BOARD_SIZE || col < 0 || col >= BOARD_SIZE) {
-            throw new IllegalArgumentException("Invalid board coordinates");
-        }
-        return board.get(row).get(col);
+        return board.get(getIndex(row, col));
     }
     
     @Override
     public String toString() {
         return new ToStringBuilder(this, ToStringStyle.MULTI_LINE_STYLE)
-            .append("board", board)
-            .toString();
+                .append("board", board)
+                .toString();
     }
-    
+
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) {
-            return true;
-        }
-        if (obj == null || getClass() != obj.getClass()) {
-            return false;
-        }
-        SudokuBoard other = (SudokuBoard) obj;
-
-        for (int row = 0; row < BOARD_SIZE; row++) {
-            for (int col = 0; col < BOARD_SIZE; col++) {
-                if (!board.get(row).get(col).equals(other.board.get(row).get(col))) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
+        return EqualsBuilder.reflectionEquals(this, obj, "solver");
     }
 
     @Override
     public int hashCode() {
-        int result = 17;
-        for (int row = 0; row < BOARD_SIZE; row++) {
-            for (int col = 0; col < BOARD_SIZE; col++) {
-                result = 31 * result + board.get(row).get(col).hashCode();
-            }
-        }
-        return result;
+        return HashCodeBuilder.reflectionHashCode(this, "solver");
     }
-    
+
     @Override
     public SudokuBoard clone() {
         try {
             SudokuBoard cloned = (SudokuBoard) super.clone();
-            cloned.board = new ArrayList<>(BOARD_SIZE);
+            cloned.board = new ArrayList<>(BOARD_SIZE * BOARD_SIZE);
 
-            for (int row = 0; row < BOARD_SIZE; row++) {
-                List<SudokuField> rowList = new ArrayList<>(BOARD_SIZE);
-                for (int col = 0; col < BOARD_SIZE; col++) {
-                    rowList.add(this.board.get(row).get(col).clone());
-                }
-                cloned.board.add(Collections.unmodifiableList(rowList));
+            for (int i = 0; i < BOARD_SIZE * BOARD_SIZE; i++) {
+                cloned.board.add(this.board.get(i).clone());
             }
 
             return cloned;
