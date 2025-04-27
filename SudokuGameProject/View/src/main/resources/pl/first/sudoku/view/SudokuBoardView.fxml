@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.geometry.Insets?>
+
+<VBox alignment="CENTER" spacing="10" xmlns="http://javafx.com/javafx/21" 
+      xmlns:fx="http://javafx.com/fxml/1" 
+      fx:controller="pl.first.sudoku.view.SudokuBoardController">
+   <padding>
+      <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+   </padding>
+   <Label text="Sudoku Game" style="-fx-font-size: 24px;"/>
+   <GridPane fx:id="sudokuGrid" alignment="CENTER" hgap="2" vgap="2" 
+             gridLinesVisible="true" minHeight="400" minWidth="400"/>
+   <HBox alignment="CENTER" spacing="15">
+      <Button text="New Game" onAction="#newGame"/>
+      <Button text="Save Game" onAction="#saveGame"/>
+      <Button text="Load Game" onAction="#loadGame"/>
+   </HBox>
+</VBox>
