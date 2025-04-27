@@ -1,6 +1,5 @@
 target/
 **/target/
-
 .idea/
 .vscode/
 *.iml
@@ -9,7 +8,6 @@ target/
 .settings/
 nbproject/
 nb-configuration.xml
-
 *.class
 *.jar
 *.war
@@ -17,13 +15,10 @@ nb-configuration.xml
 *.zip
 *.tar.gz
 *.rar
-
 *.log
 logs/
-
 bin/
-
-dependency-reduced-pom.xml
-
 savedGames/
 testSudoku/
+readOnlyDir/
+dependency-reduced-pom.xml
