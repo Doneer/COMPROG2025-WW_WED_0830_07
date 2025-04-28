@@ -1,8 +1,5 @@
 target/
 **/target/
-**/savedGames/
-**/testSudoku/
-**/readOnlyDir/
 .idea/
 .vscode/
 *.iml
@@ -20,5 +17,6 @@ nb-configuration.xml
 *.rar
 *.log
 logs/
+Thumbs.db 
 bin/
 dependency-reduced-pom.xml
