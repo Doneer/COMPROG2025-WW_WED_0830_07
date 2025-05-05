@@ -30,20 +30,15 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 
-/**
- * Main application class for the Sudoku game.
- * Handles launching the application and loading the initial scene.
- * @author zhuma
- */
 public class SudokuGameApp extends Application {
     @Override
     public void start(Stage primaryStage) throws Exception {
         FXMLLoader loader = new FXMLLoader(
-            getClass().getResource("/pl/first/sudoku/view/SudokuBoardView.fxml"));
+            getClass().getResource("/pl/first/sudoku/view/MainMenuView.fxml"));
         Parent root = loader.load();
         Scene scene = new Scene(root);
         
-        primaryStage.setTitle("Sudoku Game");
+        primaryStage.setTitle("Sudoku Game - Main Menu");
         primaryStage.setScene(scene);
         primaryStage.show();
     }
