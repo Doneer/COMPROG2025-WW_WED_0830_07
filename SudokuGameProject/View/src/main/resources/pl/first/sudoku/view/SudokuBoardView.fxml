@@ -18,6 +18,7 @@
              gridLinesVisible="true" minHeight="400" minWidth="400"/>
    <HBox alignment="CENTER" spacing="15">
       <Button text="New Game" onAction="#newGame"/>
+      <Button text="Check Solution" onAction="#checkSolution"/>
       <Button text="Save Game" onAction="#saveGame"/>
       <Button text="Load Game" onAction="#loadGame"/>
    </HBox>
