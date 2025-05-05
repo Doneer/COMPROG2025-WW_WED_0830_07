@@ -25,25 +25,26 @@
 package pl.first.sudoku.view;
 
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
+import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
+import javafx.stage.Stage;
 import pl.first.sudoku.dao.Dao;
 import pl.first.sudoku.dao.DaoException;
 import pl.first.sudoku.dao.SudokuBoardDaoFactory;
 import pl.first.sudoku.sudokusolver.BacktrackingSudokuSolver;
 import pl.first.sudoku.sudokusolver.SudokuBoard;
 
+import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-/**
- * Controller class for the Sudoku board view in JavaFX.
- * Handles user interactions and updates the board display in the JavaFX interface.
- * @author zhuma
- */
 public class SudokuBoardController implements Initializable {
 
     @FXML
@@ -56,7 +57,6 @@ public class SudokuBoardController implements Initializable {
     
     @Override
     public void initialize(URL url, ResourceBundle rb) {
-        board = new SudokuBoard(new BacktrackingSudokuSolver());
         fields = new TextField[9][9];
         
         for (int row = 0; row < 9; row++) {
@@ -66,30 +66,101 @@ public class SudokuBoardController implements Initializable {
                 field.setFont(Font.font(16));
                 field.setStyle("-fx-alignment: center; -fx-border-color: lightgray;");
                 
-                if (row % 3 == 0 || col % 3 == 0) {
-                    field.setStyle(field.getStyle() + " -fx-border-width: 2 0 0 2;");
+                // Apply thicker borders for 3x3 box separation
+                StringBuilder style = new StringBuilder(field.getStyle());
+                if (row % 3 == 0) {
+                    style.append(" -fx-border-width: 2 0 0 0;");
                 }
+                if (col % 3 == 0) {
+                    style.append(" -fx-border-width: 0 0 0 2;");
+                }
+                if (row % 3 == 0 && col % 3 == 0) {
+                    style.append(" -fx-border-width: 2 0 0 2;");
+                }
+                
+                field.setStyle(style.toString());
+                
+                final int finalRow = row;
+                final int finalCol = col;
+                field.textProperty().addListener((observable, oldValue, newValue) -> {
+                    if (newValue.matches("[1-9]")) {
+                        try {
+                            int value = Integer.parseInt(newValue);
+                            board.setValueAt(finalRow, finalCol, value);
+                        } catch (NumberFormatException e) {
+                            field.setText(oldValue);
+                        }
+                    } else if (newValue.isEmpty()) {
+                        board.setValueAt(finalRow, finalCol, 0);
+                    } else {
+                        field.setText(oldValue);
+                    }
+                });
                 
                 sudokuGrid.add(field, col, row);
                 fields[row][col] = field;
             }
         }
-        newGame();
+        
+        // If no board is provided, create a default one
+        if (board == null) {
+            board = new SudokuBoard(new BacktrackingSudokuSolver());
+            board.solveGame();
+        }
+        
+        updateBoard();
     }
     
-    @FXML
-    private void newGame() {
-        board = new SudokuBoard(new BacktrackingSudokuSolver());
-        boolean solved = board.solveGame();
-        if (solved) {
+    public void setBoard(SudokuBoard board) {
+        this.board = board;
+        if (fields != null) {
             updateBoard();
-        } else {
-            showAlert(Alert.AlertType.ERROR, "Error", "Failed to generate a solved board");
         }
     }
     
     @FXML
-    @SuppressWarnings("PMD.UnusedPrivateMethod")
+    private void newGame() {
+        try {
+            // Go back to the main menu
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/pl/first/sudoku/view/MainMenuView.fxml"));
+            Parent root = loader.load();
+            Scene scene = new Scene(root);
+            Stage stage = (Stage) sudokuGrid.getScene().getWindow();
+            stage.setScene(scene);
+            stage.setTitle("Sudoku Game - Main Menu");
+            stage.show();
+        } catch (IOException e) {
+            showAlert(Alert.AlertType.ERROR, "Error", "Failed to load main menu: " + e.getMessage());
+        }
+    }
+    
+    @FXML
+    private void checkSolution() {
+        if (board.isValid()) {
+            boolean complete = true;
+            for (int row = 0; row < 9; row++) {
+                for (int col = 0; col < 9; col++) {
+                    if (board.getValueAt(row, col) == 0) {
+                        complete = false;
+                        break;
+                    }
+                }
+                if (!complete) {
+                    break;
+                }
+            }
+            
+            if (complete) {
+                showAlert(Alert.AlertType.INFORMATION, "Success", "Congratulations! You solved the puzzle correctly!");
+            } else {
+                showAlert(Alert.AlertType.INFORMATION, "Valid so far", "Your solution is valid so far, but the board is not complete.");
+            }
+        } else {
+            showAlert(Alert.AlertType.WARNING, "Invalid Solution", "There are errors in your solution.");
+        }
+    }
+    
+    @FXML
     private void saveGame() {
         try (Dao<SudokuBoard> dao = SudokuBoardDaoFactory.getFileDao(SAVE_DIRECTORY)) {
             dao.write(DEFAULT_SAVE_NAME, board);
@@ -102,7 +173,6 @@ public class SudokuBoardController implements Initializable {
     }
     
     @FXML
-    @SuppressWarnings("PMD.UnusedPrivateMethod")
     private void loadGame() {
         try (Dao<SudokuBoard> dao = SudokuBoardDaoFactory.getFileDao(SAVE_DIRECTORY)) {
             board = dao.read(DEFAULT_SAVE_NAME);
@@ -122,11 +192,16 @@ public class SudokuBoardController implements Initializable {
         for (int row = 0; row < 9; row++) {
             for (int col = 0; col < 9; col++) {
                 int value = board.getValueAt(row, col);
-                fields[row][col].setText(Integer.toString(value));
-                fields[row][col].setEditable(false);
-
-                if ((row / 3 + col / 3) % 2 == 0) {
-                    fields[row][col].setStyle(fields[row][col].getStyle() + " -fx-background-color: #f0f0f0;");
+                TextField field = fields[row][col];
+                
+                if (value == 0) {
+                    field.setText("");
+                    field.setEditable(true);
+                    field.setStyle(field.getStyle() + " -fx-text-fill: blue;");
+                } else {
+                    field.setText(Integer.toString(value));
+                    field.setEditable(false);
+                    field.setStyle(field.getStyle() + " -fx-text-fill: black; -fx-background-color: #f0f0f0;");
                 }
             }
         }
