@@ -25,7 +25,8 @@
 package pl.first.sudoku.sudokusolver;
 
 /**
- *
+ * Enum representing difficulty levels for a Sudoku game.
+ * Each difficulty level determines how many cells are removed from a solved board.
  * @author zhuma
  */
 
@@ -47,7 +48,6 @@ public enum GameDifficulty {
     public SudokuBoard prepareBoard(SudokuBoard sourceBoard) {
         SudokuBoard gameBoard = sourceBoard.clone();
         int removed = 0;
-        int totalCells = 9 * 9;
         
         java.util.Random random = new java.util.Random();
         

@@ -32,7 +32,6 @@ import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
-import javafx.scene.paint.Color;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
 import pl.first.sudoku.dao.Dao;
@@ -66,7 +65,6 @@ public class SudokuBoardController implements Initializable {
                 field.setFont(Font.font(16));
                 field.setStyle("-fx-alignment: center; -fx-border-color: lightgray;");
                 
-                // Apply thicker borders for 3x3 box separation
                 StringBuilder style = new StringBuilder(field.getStyle());
                 if (row % 3 == 0) {
                     style.append(" -fx-border-width: 2 0 0 0;");
@@ -102,7 +100,6 @@ public class SudokuBoardController implements Initializable {
             }
         }
         
-        // If no board is provided, create a default one
         if (board == null) {
             board = new SudokuBoard(new BacktrackingSudokuSolver());
             board.solveGame();
@@ -119,9 +116,9 @@ public class SudokuBoardController implements Initializable {
     }
     
     @FXML
+    @SuppressWarnings("PMD.UnusedPrivateMethod")
     private void newGame() {
         try {
-            // Go back to the main menu
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/pl/first/sudoku/view/MainMenuView.fxml"));
             Parent root = loader.load();
             Scene scene = new Scene(root);
@@ -135,6 +132,7 @@ public class SudokuBoardController implements Initializable {
     }
     
     @FXML
+    @SuppressWarnings("PMD.UnusedPrivateMethod")
     private void checkSolution() {
         if (board.isValid()) {
             boolean complete = true;
@@ -153,7 +151,9 @@ public class SudokuBoardController implements Initializable {
             if (complete) {
                 showAlert(Alert.AlertType.INFORMATION, "Success", "Congratulations! You solved the puzzle correctly!");
             } else {
-                showAlert(Alert.AlertType.INFORMATION, "Valid so far", "Your solution is valid so far, but the board is not complete.");
+                showAlert(Alert.AlertType.INFORMATION, 
+                        "Valid so far", 
+                        "Your solution is valid so far, but the board is not complete.");
             }
         } else {
             showAlert(Alert.AlertType.WARNING, "Invalid Solution", "There are errors in your solution.");
@@ -161,6 +161,7 @@ public class SudokuBoardController implements Initializable {
     }
     
     @FXML
+    @SuppressWarnings("PMD.UnusedPrivateMethod")
     private void saveGame() {
         try (Dao<SudokuBoard> dao = SudokuBoardDaoFactory.getFileDao(SAVE_DIRECTORY)) {
             dao.write(DEFAULT_SAVE_NAME, board);
@@ -173,6 +174,7 @@ public class SudokuBoardController implements Initializable {
     }
     
     @FXML
+    @SuppressWarnings("PMD.UnusedPrivateMethod")
     private void loadGame() {
         try (Dao<SudokuBoard> dao = SudokuBoardDaoFactory.getFileDao(SAVE_DIRECTORY)) {
             board = dao.read(DEFAULT_SAVE_NAME);

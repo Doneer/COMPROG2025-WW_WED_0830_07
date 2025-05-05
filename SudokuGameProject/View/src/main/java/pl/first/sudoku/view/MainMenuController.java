@@ -41,7 +41,8 @@ import java.net.URL;
 import java.util.ResourceBundle;
 
 /**
- *
+ * Controller for the main menu view.
+ * Handles difficulty selection and game start.
  * @author zhuma
  */
 public class MainMenuController implements Initializable {
@@ -56,6 +57,7 @@ public class MainMenuController implements Initializable {
     }
     
     @FXML
+    @SuppressWarnings("PMD.UnusedPrivateMethod")
     private void startGame() {
         try {
             SudokuBoard solvedBoard = new SudokuBoard(new BacktrackingSudokuSolver());
