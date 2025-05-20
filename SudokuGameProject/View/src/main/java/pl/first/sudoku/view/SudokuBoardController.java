@@ -34,6 +34,8 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
+import javafx.scene.control.ChoiceDialog;
+import javafx.scene.control.TextInputDialog;
 import pl.first.sudoku.dao.Dao;
 import pl.first.sudoku.dao.DaoException;
 import pl.first.sudoku.dao.SudokuBoardDaoFactory;
@@ -43,6 +45,8 @@ import pl.first.sudoku.sudokusolver.SudokuBoard;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
+import java.util.List;
+import java.util.Optional;
 
 public class SudokuBoardController implements Initializable {
 
@@ -57,14 +61,15 @@ public class SudokuBoardController implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle rb) {
         fields = new TextField[9][9];
-        
+        SudokuFieldConverter converter = new SudokuFieldConverter();
+
         for (int row = 0; row < 9; row++) {
             for (int col = 0; col < 9; col++) {
                 TextField field = new TextField();
                 field.setPrefSize(40, 40);
                 field.setFont(Font.font(16));
                 field.setStyle("-fx-alignment: center; -fx-border-color: lightgray;");
-                
+
                 StringBuilder style = new StringBuilder(field.getStyle());
                 if (row % 3 == 0) {
                     style.append(" -fx-border-width: 2 0 0 0;");
@@ -75,36 +80,23 @@ public class SudokuBoardController implements Initializable {
                 if (row % 3 == 0 && col % 3 == 0) {
                     style.append(" -fx-border-width: 2 0 0 2;");
                 }
-                
+
                 field.setStyle(style.toString());
-                
+                field.setTextFormatter(SudokuTextFormatter.createFormatter(converter));
+
                 final int finalRow = row;
                 final int finalCol = col;
-                field.textProperty().addListener((observable, oldValue, newValue) -> {
-                    if (newValue.matches("[1-9]")) {
-                        try {
-                            int value = Integer.parseInt(newValue);
-                            board.setValueAt(finalRow, finalCol, value);
-                        } catch (NumberFormatException e) {
-                            field.setText(oldValue);
-                        }
-                    } else if (newValue.isEmpty()) {
-                        board.setValueAt(finalRow, finalCol, 0);
-                    } else {
-                        field.setText(oldValue);
-                    }
-                });
-                
+
                 sudokuGrid.add(field, col, row);
                 fields[row][col] = field;
             }
         }
-        
+
         if (board == null) {
             board = new SudokuBoard(new BacktrackingSudokuSolver());
             board.solveGame();
         }
-        
+
         updateBoard();
     }
     
@@ -163,13 +155,26 @@ public class SudokuBoardController implements Initializable {
     @FXML
     @SuppressWarnings("PMD.UnusedPrivateMethod")
     private void saveGame() {
-        try (Dao<SudokuBoard> dao = SudokuBoardDaoFactory.getFileDao(SAVE_DIRECTORY)) {
-            dao.write(DEFAULT_SAVE_NAME, board);
-            showAlert(Alert.AlertType.INFORMATION, "Save Successful", 
-                    "Game saved successfully to " + DEFAULT_SAVE_NAME);
-        } catch (Exception e) {
-            showAlert(Alert.AlertType.ERROR, "Save Error", 
-                    "Failed to save game: " + e.getMessage());
+        TextInputDialog dialog = new TextInputDialog(DEFAULT_SAVE_NAME);
+        dialog.setTitle("Save Game");
+        dialog.setHeaderText("Save your current game");
+        dialog.setContentText("Enter a filename:");
+
+        Optional<String> result = dialog.showAndWait();
+        if (result.isPresent()) {
+            String filename = result.get();
+            if (!filename.endsWith(".sudoku")) {
+                filename += ".sudoku";
+            }
+
+            try (Dao<SudokuBoard> dao = SudokuBoardDaoFactory.getFileDao(SAVE_DIRECTORY)) {
+                dao.write(filename, board);
+                showAlert(Alert.AlertType.INFORMATION, "Save Successful", 
+                        "Game saved successfully to " + filename);
+            } catch (Exception e) {
+                showAlert(Alert.AlertType.ERROR, "Save Error", 
+                        "Failed to save game: " + e.getMessage());
+            }
         }
     }
     
@@ -177,10 +182,27 @@ public class SudokuBoardController implements Initializable {
     @SuppressWarnings("PMD.UnusedPrivateMethod")
     private void loadGame() {
         try (Dao<SudokuBoard> dao = SudokuBoardDaoFactory.getFileDao(SAVE_DIRECTORY)) {
-            board = dao.read(DEFAULT_SAVE_NAME);
-            updateBoard();
-            showAlert(Alert.AlertType.INFORMATION, "Load Successful", 
-                    "Game loaded successfully from " + DEFAULT_SAVE_NAME);
+            List<String> savedGames = dao.names();
+
+            if (savedGames.isEmpty()) {
+                showAlert(Alert.AlertType.INFORMATION, "No Saved Games", 
+                        "There are no saved games to load.");
+                return;
+            }
+
+            ChoiceDialog<String> dialog = new ChoiceDialog<>(savedGames.get(0), savedGames);
+            dialog.setTitle("Load Game");
+            dialog.setHeaderText("Load a saved game");
+            dialog.setContentText("Choose a saved game:");
+
+            Optional<String> result = dialog.showAndWait();
+            if (result.isPresent()) {
+                String filename = result.get();
+                board = dao.read(filename);
+                updateBoard();
+                showAlert(Alert.AlertType.INFORMATION, "Load Successful", 
+                        "Game loaded successfully from " + filename);
+            }
         } catch (DaoException e) {
             showAlert(Alert.AlertType.ERROR, "Load Error", 
                     "Failed to load game: " + e.getMessage());
@@ -195,7 +217,7 @@ public class SudokuBoardController implements Initializable {
             for (int col = 0; col < 9; col++) {
                 int value = board.getValueAt(row, col);
                 TextField field = fields[row][col];
-                
+
                 if (value == 0) {
                     field.setText("");
                     field.setEditable(true);
@@ -205,6 +227,24 @@ public class SudokuBoardController implements Initializable {
                     field.setEditable(false);
                     field.setStyle(field.getStyle() + " -fx-text-fill: black; -fx-background-color: #f0f0f0;");
                 }
+
+                final int finalRow = row;
+                final int finalCol = col;
+
+                field.textProperty().removeListener(changeListener -> {});
+
+                field.textProperty().addListener((observable, oldValue, newValue) -> {
+                    if (field.isEditable()) {
+                        try {
+                            int val = newValue.isEmpty() ? 0 : Integer.parseInt(newValue);
+                            if (val >= 0 && val <= 9) {
+                                board.setValueAt(finalRow, finalCol, val);
+                            }
+                        } catch (NumberFormatException e) {
+                            //Invalid input, TextFormatter should prevent this
+                        }
+                    }
+                });
             }
         }
     }
