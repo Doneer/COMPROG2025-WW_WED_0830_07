@@ -22,25 +22,32 @@
  * THE SOFTWARE.
  */
 
-package pl.first.sudoku.resources;
+package pl.first.sudoku.exceptions;
 
-import java.util.ListResourceBundle;
+import java.util.Locale;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
 
 /**
- * Resource bundle containing information about the application authors in Polish.
- * This class implements ListResourceBundle to provide author-related information
- * that can be accessed through the ResourceBundle.getBundle mechanism.
+ * Utility class for accessing internationalized exception messages.
  * @author zhuma
  */
-public class AuthorsBundle_pl extends ListResourceBundle {
-    @Override
-    protected Object[][] getContents() {
-        return new Object[][] {
-            {"authors.title", "Autorzy"},
-            {"authors.names", "Daniyar Zhumatayev, Kuzma Martysiuk"},
-            {"authors.university", "Politechnika Łódzka"},
-            {"authors.email", "253857@edu.p.lodz.pl, 253854@edu.p.lodz.pl"},
-            {"authors.year", "2025"}
-        };
+public class ExceptionMessages {
+    private static final String BUNDLE_NAME = "pl.first.sudoku.resources.exception_messages";
+    
+    /**
+     * Retrieves an exception message for the given key and locale.
+     *
+     * @param key the message key
+     * @param locale the locale to use
+     * @return the localized message, or a placeholder if not found
+     */
+    public static String getMessage(String key, Locale locale) {
+        try {
+            ResourceBundle bundle = ResourceBundle.getBundle(BUNDLE_NAME, locale);
+            return bundle.getString(key);
+        } catch (MissingResourceException e) {
+            return "!" + key + "!";
+        }
     }
 }

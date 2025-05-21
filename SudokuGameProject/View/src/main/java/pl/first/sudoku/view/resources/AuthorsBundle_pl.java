@@ -22,7 +22,7 @@
  * THE SOFTWARE.
  */
 
-package pl.first.sudoku.resources;
+package pl.first.sudoku.view.resources;
 
 import java.util.ListResourceBundle;
 

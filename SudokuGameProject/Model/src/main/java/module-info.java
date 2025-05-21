@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2025 Lodz University of Technology.
+ * Copyright 2025 Daniyar Zhumatayev, Kuzma Martysiuk
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,10 +25,19 @@
 module SudokuGameModel {
     exports pl.first.sudoku.sudokusolver;
     exports pl.first.sudoku.dao;
+    exports pl.first.sudoku.exceptions;
+    exports pl.first.sudoku.resources;
    
     requires javafx.controls;
     requires javafx.fxml;
     requires java.desktop;  
     requires java.base;
     requires org.apache.commons.lang3;
+    
+    requires org.slf4j;
+    requires org.apache.logging.log4j;
+    
+    provides java.util.ResourceBundle with 
+        pl.first.sudoku.resources.AuthorsBundle_en,
+        pl.first.sudoku.resources.AuthorsBundle_pl;
 }

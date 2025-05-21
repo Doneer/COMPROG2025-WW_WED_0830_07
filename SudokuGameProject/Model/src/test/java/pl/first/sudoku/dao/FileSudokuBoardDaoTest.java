@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2025 zhuma.
+ * Copyright 2025 Daniyar Zhumatayev, Kuzma Martysiuk
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -229,5 +229,31 @@ public class FileSudokuBoardDaoTest {
     public void testFactoryInstantiation() {
         SudokuBoardDaoFactory factory = new SudokuBoardDaoFactory();
         assertNotNull(factory, "Factory instance should not be null");
+    }
+    
+    @Test
+    public void testDaoExceptionConstructors() {
+        Exception cause = new RuntimeException("Original cause");
+
+        DaoException ex1 = new DaoException("Test message");
+        DaoException ex2 = new DaoException("Test with cause", cause);
+        DaoException ex3 = DaoException.createReadException("details", cause);
+        DaoException ex4 = DaoException.createWriteException("details", cause);
+        DaoException ex5 = DaoException.createNamesException("details", cause);
+
+        assertEquals("Test message", ex1.getMessage());
+        assertNull(ex1.getCause());
+
+        assertEquals("Test with cause", ex2.getMessage());
+        assertEquals(cause, ex2.getCause());
+
+        assertNotNull(ex3.getMessage());
+        assertEquals(cause, ex3.getCause());
+
+        assertNotNull(ex4.getMessage());
+        assertEquals(cause, ex4.getCause());
+
+        assertNotNull(ex5.getMessage());
+        assertEquals(cause, ex5.getCause());
     }
 }

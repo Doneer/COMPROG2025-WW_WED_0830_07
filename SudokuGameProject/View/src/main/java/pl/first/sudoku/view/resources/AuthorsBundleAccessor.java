@@ -22,25 +22,30 @@
  * THE SOFTWARE.
  */
 
-package pl.first.sudoku.resources;
-
-import java.util.ListResourceBundle;
+package pl.first.sudoku.view.resources;
 
 /**
- * Resource bundle containing information about the application authors in Polish.
- * This class implements ListResourceBundle to provide author-related information
- * that can be accessed through the ResourceBundle.getBundle mechanism.
+ * Helper class to access author resource bundles.
  * @author zhuma
  */
-public class AuthorsBundle_pl extends ListResourceBundle {
-    @Override
-    protected Object[][] getContents() {
-        return new Object[][] {
-            {"authors.title", "Autorzy"},
-            {"authors.names", "Daniyar Zhumatayev, Kuzma Martysiuk"},
-            {"authors.university", "Politechnika Łódzka"},
-            {"authors.email", "253857@edu.p.lodz.pl, 253854@edu.p.lodz.pl"},
-            {"authors.year", "2025"}
-        };
+public class AuthorsBundleAccessor {
+    /**
+     * Gets the base name for authors resource bundle.
+     * 
+     * @return Base name for authors resources
+     */
+    public static String getBundleName() {
+        return "pl.first.sudoku.view.resources.AuthorsBundle";
+    }
+    
+    /**
+     * Gets author information by key.
+     * 
+     * @param key The resource key
+     * @param locale The locale to use
+     * @return The localized value
+     */
+    public static String getAuthorInfo(String key, java.util.Locale locale) {
+        return java.util.ResourceBundle.getBundle(getBundleName(), locale).getString(key);
     }
 }

@@ -27,7 +27,8 @@ package pl.first.sudoku.view;
 import javafx.util.StringConverter;
 
 /**
- *
+ * Converter for SudokuField values to and from strings.
+ * Used for bidirectional binding between TextFields and SudokuField values.
  * @author zhuma
  */
 public class SudokuFieldConverter extends StringConverter<Integer> {

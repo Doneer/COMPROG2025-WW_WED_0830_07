@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2025 Lodz University of Technology.
+ * Copyright 2025 Daniyar Zhumatayev, Kuzma Martysiuk
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,15 +21,17 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package pl.first.sudoku.resources;
 
-/**
- *
- * @author Zhmaggernaut
- */
+package pl.first.sudoku.resources;
 
 import java.util.ListResourceBundle;
 
+/**
+ * Resource bundle containing information about the application authors in English.
+ * This class implements ListResourceBundle to provide author-related information
+ * that can be accessed through the ResourceBundle.getBundle mechanism.
+ * @author zhuma
+ */
 public class AuthorsBundle_en extends ListResourceBundle {
     @Override
     protected Object[][] getContents() {

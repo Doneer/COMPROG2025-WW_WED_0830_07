@@ -22,23 +22,23 @@
  * THE SOFTWARE.
  */
 
-package pl.first.sudoku.resources;
+package pl.first.sudoku.view.resources;
 
 import java.util.ListResourceBundle;
 
 /**
- * Resource bundle containing information about the application authors in Polish.
+ * Resource bundle containing information about the application authors in English.
  * This class implements ListResourceBundle to provide author-related information
  * that can be accessed through the ResourceBundle.getBundle mechanism.
  * @author zhuma
  */
-public class AuthorsBundle_pl extends ListResourceBundle {
+public class AuthorsBundle_en extends ListResourceBundle {
     @Override
     protected Object[][] getContents() {
         return new Object[][] {
-            {"authors.title", "Autorzy"},
+            {"authors.title", "Authors"},
             {"authors.names", "Daniyar Zhumatayev, Kuzma Martysiuk"},
-            {"authors.university", "Politechnika Łódzka"},
+            {"authors.university", "Lodz University of Technology"},
             {"authors.email", "253857@edu.p.lodz.pl, 253854@edu.p.lodz.pl"},
             {"authors.year", "2025"}
         };

@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright 2025 zhuma.
+ * Copyright 2025 Daniyar Zhumatayev, Kuzma Martysiuk
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,21 +29,38 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SudokuGameApp extends Application {
+    private static final Logger logger = LoggerFactory.getLogger(SudokuGameApp.class);
+    
     @Override
     public void start(Stage primaryStage) throws Exception {
+        logger.info("Starting Sudoku Game application");
+
+        LanguageManager languageManager = LanguageManager.getInstance();
+
         FXMLLoader loader = new FXMLLoader(
             getClass().getResource("/pl/first/sudoku/view/MainMenuView.fxml"));
+
+        loader.setResources(languageManager.getMessagesBundle());
+
+        logger.debug("Loading main menu view");
+
         Parent root = loader.load();
         Scene scene = new Scene(root);
-        
-        primaryStage.setTitle("Sudoku Game - Main Menu");
+
+        primaryStage.setTitle(languageManager.getMessagesBundle().getString("title.mainMenu"));
         primaryStage.setScene(scene);
         primaryStage.show();
+
+        logger.info("Application initialized and displayed");
     }
     
     public static void main(String[] args) {
+        logger.info("Sudoku Game application launched");
+
         launch(args);
     }
 }

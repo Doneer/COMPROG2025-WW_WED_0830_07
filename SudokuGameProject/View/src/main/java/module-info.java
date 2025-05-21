@@ -23,11 +23,18 @@
  */
 
 module SudokuGameView {
-    requires SudokuGameModel;
+    requires transitive SudokuGameModel;
     requires javafx.controls;
     requires javafx.fxml;
     
-    opens pl.first.sudoku.view to javafx.fxml;
+    requires org.slf4j;
+    requires org.apache.logging.log4j;
     
     exports pl.first.sudoku.view;
+    exports pl.first.sudoku.view.resources;
+    exports pl.first.sudoku.viewresources;
+    
+    opens pl.first.sudoku.view to javafx.fxml;
+    
+    uses java.util.ResourceBundle;
 }

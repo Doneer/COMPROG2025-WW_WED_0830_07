@@ -22,25 +22,20 @@
  * THE SOFTWARE.
  */
 
-package pl.first.sudoku.resources;
-
-import java.util.ListResourceBundle;
+package pl.first.sudoku.exceptions;
 
 /**
- * Resource bundle containing information about the application authors in Polish.
- * This class implements ListResourceBundle to provide author-related information
- * that can be accessed through the ResourceBundle.getBundle mechanism.
+ * Exception thrown when data operations in the Sudoku application fail.
+ * Used as a parent class for more specific data-related exceptions.
  * @author zhuma
  */
-public class AuthorsBundle_pl extends ListResourceBundle {
-    @Override
-    protected Object[][] getContents() {
-        return new Object[][] {
-            {"authors.title", "Autorzy"},
-            {"authors.names", "Daniyar Zhumatayev, Kuzma Martysiuk"},
-            {"authors.university", "Politechnika Łódzka"},
-            {"authors.email", "253857@edu.p.lodz.pl, 253854@edu.p.lodz.pl"},
-            {"authors.year", "2025"}
-        };
+public class SudokuDataException extends SudokuException {
+    
+    public SudokuDataException(String message) {
+        super(message);
+    }
+    
+    public SudokuDataException(String message, Throwable cause) {
+        super(message, cause);
     }
 }

@@ -22,25 +22,37 @@
  * THE SOFTWARE.
  */
 
-package pl.first.sudoku.resources;
+package pl.first.sudoku.exceptions;
 
-import java.util.ListResourceBundle;
+import java.text.MessageFormat;
+import java.util.Locale;
 
 /**
- * Resource bundle containing information about the application authors in Polish.
- * This class implements ListResourceBundle to provide author-related information
- * that can be accessed through the ResourceBundle.getBundle mechanism.
+ * Exception thrown when saving a Sudoku board fails.
  * @author zhuma
  */
-public class AuthorsBundle_pl extends ListResourceBundle {
-    @Override
-    protected Object[][] getContents() {
-        return new Object[][] {
-            {"authors.title", "Autorzy"},
-            {"authors.names", "Daniyar Zhumatayev, Kuzma Martysiuk"},
-            {"authors.university", "Politechnika Łódzka"},
-            {"authors.email", "253857@edu.p.lodz.pl, 253854@edu.p.lodz.pl"},
-            {"authors.year", "2025"}
-        };
+public class SudokuSaveException extends SudokuDataException {
+    
+    private static final String MESSAGE_KEY = "exception.sudoku.save_error";
+    
+    public SudokuSaveException(String details) {
+        super(formatMessage(Locale.getDefault(), details));
+    }
+    
+    public SudokuSaveException(String details, Throwable cause) {
+        super(formatMessage(Locale.getDefault(), details), cause);
+    }
+    
+    public SudokuSaveException(String details, Locale locale) {
+        super(formatMessage(locale, details));
+    }
+    
+    public SudokuSaveException(String details, Locale locale, Throwable cause) {
+        super(formatMessage(locale, details), cause);
+    }
+    
+    private static String formatMessage(Locale locale, String details) {
+        String template = ExceptionMessages.getMessage(MESSAGE_KEY, locale);
+        return MessageFormat.format(template, details);
     }
 }

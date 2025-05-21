@@ -24,6 +24,8 @@
 
 package pl.first.sudoku.dao;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pl.first.sudoku.sudokusolver.SudokuBoard;
 
 import java.io.File;
@@ -43,6 +45,8 @@ import java.util.stream.Collectors;
  * @author zhuma
  */
 public class FileSudokuBoardDao implements Dao<SudokuBoard> {
+    private static final Logger logger = LoggerFactory.getLogger(FileSudokuBoardDao.class);
+    
     private final String directoryPath;
     private ObjectOutputStream outputStream = null;
     private ObjectInputStream inputStream = null;
@@ -55,52 +59,91 @@ public class FileSudokuBoardDao implements Dao<SudokuBoard> {
     private void createDirectoryIfNotExists() {
         File directory = new File(directoryPath);
         if (!directory.exists()) {
-            directory.mkdirs();
+            boolean created = directory.mkdirs();
+            if (created) {
+                logger.info("Created directory: {}", directoryPath);
+            } else {
+                logger.warn("Failed to create directory: {}", directoryPath);
+            }
         }
     }
     
     @Override
     public SudokuBoard read(String name) throws DaoException {
         Path filePath = Paths.get(directoryPath, name);
+        logger.debug("Reading SudokuBoard from file: {}", filePath);
+        
         try {
             inputStream = new ObjectInputStream(new FileInputStream(filePath.toFile()));
             SudokuBoard board = (SudokuBoard) inputStream.readObject();
+            logger.info("Successfully read SudokuBoard from file: {}", name);
             return board;
         } catch (IOException | ClassNotFoundException e) {
-            throw new DaoException("Error reading SudokuBoard from file: " + name, e);
+            logger.error("Error reading SudokuBoard from file: {}", name, e);
+            throw DaoException.createReadException(name, e);
         }
     }
     
     @Override
     public void write(String name, SudokuBoard board) throws DaoException {
         Path filePath = Paths.get(directoryPath, name);
+        logger.debug("Writing SudokuBoard to file: {}", filePath);
+        
         try {
             outputStream = new ObjectOutputStream(new FileOutputStream(filePath.toFile()));
             outputStream.writeObject(board);
+            outputStream.flush();
+            logger.info("Successfully wrote SudokuBoard to file: {}", name);
         } catch (IOException e) {
-            throw new DaoException("Error writing SudokuBoard to file: " + name, e);
+            logger.error("Error writing SudokuBoard to file: {}", name, e);
+            throw DaoException.createWriteException(name, e);
         }
     }
     
     @Override
     public List<String> names() throws DaoException {
+        logger.debug("Listing files in directory: {}", directoryPath);
+        
         try {
-            return Files.list(Paths.get(directoryPath))
+            List<String> fileNames = Files.list(Paths.get(directoryPath))
                     .filter(Files::isRegularFile)
                     .map(path -> path.getFileName().toString())
                     .collect(Collectors.toList());
+            
+            logger.info("Found {} files in directory: {}", fileNames.size(), directoryPath);
+            return fileNames;
         } catch (IOException e) {
-            throw new DaoException("Error listing files in directory: " + directoryPath, e);
+            logger.error("Error listing files in directory: {}", directoryPath, e);
+            throw DaoException.createNamesException(directoryPath, e);
         }
     }
     
     @Override
     public void close() throws Exception {
+        logger.debug("Closing DAO resources");
+        
         if (outputStream != null) {
-            outputStream.close();
+            try {
+                outputStream.close();
+            } catch (IOException e) {
+                logger.error("Error closing output stream", e);
+                throw new Exception("Error closing output stream", e);
+            } finally {
+                outputStream = null;
+            }
         }
+        
         if (inputStream != null) {
-            inputStream.close();
+            try {
+                inputStream.close();
+            } catch (IOException e) {
+                logger.error("Error closing input stream", e);
+                throw new Exception("Error closing input stream", e);
+            } finally {
+                inputStream = null;
+            }
         }
+        
+        logger.debug("DAO resources closed successfully");
     }
 }

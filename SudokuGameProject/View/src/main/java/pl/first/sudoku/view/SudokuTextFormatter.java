@@ -25,10 +25,12 @@
 package pl.first.sudoku.view;
 
 import javafx.scene.control.TextFormatter;
+
 import java.util.function.UnaryOperator;
 
 /**
- *
+ * Factory for creating TextFormatters for Sudoku input fields.
+ * Provides validation for Sudoku field values (1-9 or empty).
  * @author zhuma
  */
 public class SudokuTextFormatter {

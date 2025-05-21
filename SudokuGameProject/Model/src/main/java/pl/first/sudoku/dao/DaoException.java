@@ -24,17 +24,45 @@
 
 package pl.first.sudoku.dao;
 
+import pl.first.sudoku.exceptions.SudokuDataException;
+
+import java.text.MessageFormat;
+import java.util.Locale;
+
 /**
  * Exception thrown by Dao implementations when errors occur during data access operations.
  * @author zhuma
  */
-public class DaoException extends Exception {
-
+public class DaoException extends SudokuDataException {
+    private static final String READ_ERROR_KEY = "exception.dao.read_error";
+    private static final String WRITE_ERROR_KEY = "exception.dao.write_error";
+    private static final String NAMES_ERROR_KEY = "exception.dao.names_error";
+    
     public DaoException(String message) {
         super(message);
     }
 
     public DaoException(String message, Throwable cause) {
         super(message, cause);
+    }
+    
+    public static DaoException createReadException(String details, Throwable cause) {
+        String message = formatMessage(READ_ERROR_KEY, Locale.getDefault(), details);
+        return new DaoException(message, cause);
+    }
+    
+    public static DaoException createWriteException(String details, Throwable cause) {
+        String message = formatMessage(WRITE_ERROR_KEY, Locale.getDefault(), details);
+        return new DaoException(message, cause);
+    }
+    
+    public static DaoException createNamesException(String details, Throwable cause) {
+        String message = formatMessage(NAMES_ERROR_KEY, Locale.getDefault(), details);
+        return new DaoException(message, cause);
+    }
+    
+    private static String formatMessage(String key, Locale locale, String details) {
+        String template = pl.first.sudoku.exceptions.ExceptionMessages.getMessage(key, locale);
+        return MessageFormat.format(template, details);
     }
 }
