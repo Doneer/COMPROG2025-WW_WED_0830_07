@@ -63,4 +63,25 @@ public enum GameDifficulty {
         
         return gameBoard;
     }
+    
+    public EditableSudokuBoardDecorator prepareDecoratedBoard(SudokuBoard sourceBoard) {
+        SudokuBoard gameBoard = sourceBoard.clone();
+        int removed = 0;
+
+        java.util.Random random = new java.util.Random();
+
+        while (removed < cellsToRemove) {
+            int row = random.nextInt(9);
+            int col = random.nextInt(9);
+
+            if (gameBoard.getValueAt(row, col) != 0) {
+                gameBoard.setValueAt(row, col, 0);
+                removed++;
+            }
+        }
+
+        EditableSudokuBoardDecorator decorator = new EditableSudokuBoardDecorator(gameBoard);
+        decorator.lockNonEmptyFields();
+        return decorator;
+    }
 }

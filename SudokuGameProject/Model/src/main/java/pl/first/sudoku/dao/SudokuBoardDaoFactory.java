@@ -24,6 +24,7 @@
 
 package pl.first.sudoku.dao;
 
+import pl.first.sudoku.sudokusolver.EditableSudokuBoardDecorator;
 import pl.first.sudoku.sudokusolver.SudokuBoard;
 
 /**
@@ -34,5 +35,9 @@ import pl.first.sudoku.sudokusolver.SudokuBoard;
 public class SudokuBoardDaoFactory {
     public static Dao<SudokuBoard> getFileDao(String directoryName) {
         return new FileSudokuBoardDao(directoryName);
+    }
+    
+    public static Dao<EditableSudokuBoardDecorator> getEditableFileDao(String directoryName) {
+        return new EditableSudokuBoardDao(directoryName);
     }
 }

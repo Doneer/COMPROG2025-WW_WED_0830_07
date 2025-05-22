@@ -48,6 +48,7 @@ import pl.first.sudoku.dao.Dao;
 import pl.first.sudoku.dao.DaoException;
 import pl.first.sudoku.dao.SudokuBoardDaoFactory;
 import pl.first.sudoku.sudokusolver.BacktrackingSudokuSolver;
+import pl.first.sudoku.sudokusolver.EditableSudokuBoardDecorator;
 import pl.first.sudoku.sudokusolver.SudokuBoard;
 
 import java.io.IOException;
@@ -57,6 +58,10 @@ import java.util.Locale;
 import java.util.Optional;
 import java.util.ResourceBundle;
 
+/**
+ * Controller for the sudoku board view.
+ * @author zhuma
+ */
 public class SudokuBoardController implements Initializable {
     
     private static final Logger logger = LoggerFactory.getLogger(SudokuBoardController.class);
@@ -83,6 +88,7 @@ public class SudokuBoardController implements Initializable {
     private Button languageButton;
     
     private SudokuBoard board;
+    private EditableSudokuBoardDecorator decoratedBoard;
     private TextField[][] fields;
     private static final String SAVE_DIRECTORY = "savedGames";
     private static final String DEFAULT_SAVE_NAME = "game.sudoku";
@@ -94,6 +100,7 @@ public class SudokuBoardController implements Initializable {
         fields = new TextField[9][9];
         SudokuFieldConverter converter = new SudokuFieldConverter();
         
+        // Creating the grid of text fields for the board
         for (int row = 0; row < 9; row++) {
             for (int col = 0; col < 9; col++) {
                 TextField field = new TextField();
@@ -120,9 +127,11 @@ public class SudokuBoardController implements Initializable {
             }
         }
         
+        // Create a default board if none exists
         if (board == null) {
             board = new SudokuBoard(new BacktrackingSudokuSolver());
             board.solveGame();
+            decoratedBoard = new EditableSudokuBoardDecorator(board);
         }
         
         languageManager.localeProperty().addListener((observable, oldValue, newValue) -> {
@@ -155,6 +164,16 @@ public class SudokuBoardController implements Initializable {
     
     public void setBoard(SudokuBoard board) {
         this.board = board;
+        this.decoratedBoard = new EditableSudokuBoardDecorator(board);
+        this.decoratedBoard.lockNonEmptyFields();
+        if (fields != null) {
+            updateBoard();
+        }
+    }
+    
+    public void setDecoratedBoard(EditableSudokuBoardDecorator decoratedBoard) {
+        this.decoratedBoard = decoratedBoard;
+        this.board = decoratedBoard.getSudokuBoard();
         if (fields != null) {
             updateBoard();
         }
@@ -171,16 +190,23 @@ public class SudokuBoardController implements Initializable {
     @FXML
     @SuppressWarnings("PMD.UnusedPrivateMethod")
     private void newGame() {
+        logger.debug("Starting new game");
+
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/pl/first/sudoku/view/MainMenuView.fxml"));
             loader.setResources(languageManager.getMessagesBundle());
             Parent root = loader.load();
+
             MainMenuController controller = loader.getController();
             controller.updateForCurrentLocale();
+
             Scene scene = new Scene(root);
             Stage stage = (Stage) sudokuGrid.getScene().getWindow();
             stage.setScene(scene);
-            stage.setTitle(languageManager.getMessagesBundle().getString("title.mainMenu"));
+
+            ResourceBundle messages = languageManager.getMessagesBundle();
+            stage.setTitle(messages.getString("title.mainMenu"));
+            stage.show();
 
             logger.info("Returned to main menu");
         } catch (IOException e) {
@@ -267,8 +293,9 @@ public class SudokuBoardController implements Initializable {
 
             logger.debug("Saving game to file: {}", filename);
 
-            try (Dao<SudokuBoard> dao = SudokuBoardDaoFactory.getFileDao(SAVE_DIRECTORY)) {
-                dao.write(filename, board);
+            try (Dao<EditableSudokuBoardDecorator> dao = SudokuBoardDaoFactory.getEditableFileDao(SAVE_DIRECTORY)) {
+                // Save the decorated board to preserve editable state
+                dao.write(filename, decoratedBoard);
 
                 logger.info("Game saved successfully to {}", filename);
 
@@ -292,7 +319,7 @@ public class SudokuBoardController implements Initializable {
 
         logger.debug("Attempting to load game");
 
-        try (Dao<SudokuBoard> dao = SudokuBoardDaoFactory.getFileDao(SAVE_DIRECTORY)) {
+        try (Dao<EditableSudokuBoardDecorator> dao = SudokuBoardDaoFactory.getEditableFileDao(SAVE_DIRECTORY)) {
             List<String> savedGames = dao.names();
 
             if (savedGames.isEmpty()) {
@@ -342,7 +369,12 @@ public class SudokuBoardController implements Initializable {
                 try {
                     logger.debug("Loading game from file: {}", filename);
 
-                    board = dao.read(filename);
+                    // Load the decorated board
+                    decoratedBoard = dao.read(filename);
+                    
+                    // Get the wrapped SudokuBoard
+                    board = decoratedBoard.getSudokuBoard();
+                    
                     updateBoard();
 
                     logger.info("Game loaded successfully from {}", filename);
@@ -383,18 +415,33 @@ public class SudokuBoardController implements Initializable {
     }
     
     private void updateBoard() {
+        // Check if decoratedBoard is null before using it
+        if (decoratedBoard == null && board != null) {
+            decoratedBoard = new EditableSudokuBoardDecorator(board);
+            decoratedBoard.lockNonEmptyFields();
+        }
+        
+        if (decoratedBoard == null) {
+            logger.warn("Both board and decoratedBoard are null in updateBoard");
+            return;
+        }
+        
         for (int row = 0; row < 9; row++) {
             for (int col = 0; col < 9; col++) {
                 int value = board.getValueAt(row, col);
                 TextField field = fields[row][col];
+                boolean isEditable = decoratedBoard.isFieldEditable(row, col);
                 
                 if (value == 0) {
                     field.setText("");
-                    field.setEditable(true);
-                    field.setStyle(field.getStyle() + " -fx-text-fill: blue;");
                 } else {
                     field.setText(Integer.toString(value));
-                    field.setEditable(false);
+                }
+                
+                field.setEditable(isEditable);
+                if (isEditable) {
+                    field.setStyle(field.getStyle() + " -fx-text-fill: blue;");
+                } else {
                     field.setStyle(field.getStyle() + " -fx-text-fill: black; -fx-background-color: #f0f0f0;");
                 }
                 
@@ -402,11 +449,18 @@ public class SudokuBoardController implements Initializable {
                 final int finalCol = col;
                 
                 field.textProperty().addListener((observable, oldValue, newValue) -> {
-                    if (field.isEditable()) {
+                    if (decoratedBoard.isFieldEditable(finalRow, finalCol)) {
                         try {
                             int val = newValue.isEmpty() ? 0 : Integer.parseInt(newValue);
                             if (val >= 0 && val <= 9) {
-                                board.setValueAt(finalRow, finalCol, val);
+                                try {
+                                    // Use the decorator to set the value
+                                    decoratedBoard.setValueAt(finalRow, finalCol, val);
+                                } catch (IllegalStateException e) {
+                                    // Field is not editable, revert to old value
+                                    logger.debug("Attempted to modify non-editable field: {}", e.getMessage());
+                                    field.setText(oldValue);
+                                }
                             }
                         } catch (NumberFormatException e) {
                             logger.debug("Invalid input format ignored: {}", e.getMessage());

@@ -41,6 +41,7 @@ import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.first.sudoku.sudokusolver.BacktrackingSudokuSolver;
+import pl.first.sudoku.sudokusolver.EditableSudokuBoardDecorator;
 import pl.first.sudoku.sudokusolver.GameDifficulty;
 import pl.first.sudoku.sudokusolver.SudokuBoard;
 
@@ -211,18 +212,17 @@ public class MainMenuController implements Initializable {
             solvedBoard.solveGame();
 
             GameDifficulty selectedDifficulty = difficultyComboBox.getValue();
-
             logger.info("Creating new game with difficulty: {}", selectedDifficulty);
 
-            SudokuBoard gameBoard = selectedDifficulty.prepareBoard(solvedBoard);
+            EditableSudokuBoardDecorator decoratedBoard = selectedDifficulty.prepareDecoratedBoard(solvedBoard);
 
             FXMLLoader loader = new FXMLLoader(getClass().getResource("/pl/first/sudoku/view/SudokuBoardView.fxml"));
             loader.setResources(languageManager.getMessagesBundle());
             Parent root = loader.load();
 
             SudokuBoardController controller = loader.getController();
-            controller.setBoard(gameBoard);
             
+            controller.setDecoratedBoard(decoratedBoard);
             controller.updateForCurrentLocale();
 
             Scene scene = new Scene(root);
@@ -230,12 +230,19 @@ public class MainMenuController implements Initializable {
             stage.setScene(scene);
 
             ResourceBundle messages = languageManager.getMessagesBundle();
-            stage.setTitle(messages.getString("title.game") + " - " + selectedDifficulty);
+            stage.setTitle(messages.getString("title.game") + " - " + getDifficultyText(selectedDifficulty));
             stage.show();
 
             logger.info("Game started successfully");
         } catch (IOException e) {
             logger.error("Error loading game board view", e);
+            
+            ResourceBundle messages = languageManager.getMessagesBundle();
+            Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.setTitle(messages.getString("alert.error"));
+            alert.setHeaderText(null);
+            alert.setContentText(messages.getString("alert.error.content") + e.getMessage());
+            alert.showAndWait();
         }
     }
     
