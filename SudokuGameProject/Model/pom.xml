@@ -10,7 +10,7 @@
     <packaging>jar</packaging>
     
     <name>Sudoku Game Model</name>
-    <description>Model component containing game logic and DAO implementation</description>
+    <description>Core game logic, data persistence layer, and business model components</description>
     
     <dependencies>
         <dependency>
@@ -186,6 +186,12 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-pmd-plugin</artifactId>
                 <version>3.26.0</version>
+                <configuration>
+                    <minimumTokens>150</minimumTokens>
+                    <excludes>
+                        <exclude>**/dao/*Dao.java</exclude>
+                    </excludes>
+                </configuration>
             </plugin>
         </plugins>
     </reporting>

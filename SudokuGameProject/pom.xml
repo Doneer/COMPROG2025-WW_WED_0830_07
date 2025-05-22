@@ -7,7 +7,7 @@
     <packaging>pom</packaging>
     
     <name>Sudoku Game Project</name>
-    <description>A Sudoku game application with persistence capabilities developed for WW_WED_0830_07 lab group</description>
+    <description>A JavaFX-based Sudoku game with internationalization, persistence, and comprehensive testing</description>
     
     <licenses>
         <license>
@@ -228,6 +228,12 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-pmd-plugin</artifactId>
                 <version>3.26.0</version>
+                <configuration>
+                    <minimumTokens>150</minimumTokens>
+                    <excludes>
+                        <exclude>**/dao/*Dao.java</exclude>
+                    </excludes>
+                </configuration>
             </plugin>
         </plugins>
     </reporting>

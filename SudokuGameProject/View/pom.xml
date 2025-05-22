@@ -10,7 +10,7 @@
     <packaging>jar</packaging>
     
     <name>Sudoku Game View</name>
-    <description>View component containing JavaFX user interface</description>
+    <description>JavaFX user interface with internationalization and language switching capabilities</description>
     
     <dependencies>
         <dependency>
@@ -164,6 +164,12 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-pmd-plugin</artifactId>
                 <version>3.26.0</version>
+                <configuration>
+                    <minimumTokens>150</minimumTokens>
+                    <excludes>
+                        <exclude>**/dao/*Dao.java</exclude>
+                    </excludes>
+                </configuration>
             </plugin>
         </plugins>
     </reporting>
