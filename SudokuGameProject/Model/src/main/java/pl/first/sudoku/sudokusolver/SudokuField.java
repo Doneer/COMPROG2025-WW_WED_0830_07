@@ -22,46 +22,73 @@
  * SOFTWARE.
  */
 
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
- */
-
 package pl.first.sudoku.sudokusolver;
 
+import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.SimpleIntegerProperty;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 
 /**
  * Class representing a single field in a Sudoku puzzle.
  * Contains the value and provides notification when value changes.
+ * Now uses JavaFX Properties for proper bidirectional binding.
  * @author zhuma
  */
 public class SudokuField implements Serializable, Cloneable, Comparable<SudokuField> {
     private static final long serialVersionUID = 1L;
-    private int value;
+    
+    private transient IntegerProperty value;
+    
+    private int persistentValue = 0;
+    
     private final PropertyChangeSupport changes = new PropertyChangeSupport(this);
     
     public SudokuField() {
-        this.value = 0;
+        initializeProperty();
     }
     
-    public int getFieldValue() {
+    private void initializeProperty() {
+        this.value = new SimpleIntegerProperty(persistentValue) {
+            @Override
+            public void set(int newValue) {
+                if (newValue < 0 || newValue > 9) {
+                    throw new IllegalArgumentException("Value must be between 0 and 9");
+                }
+                
+                int oldValue = get();
+                super.set(newValue);
+                
+                persistentValue = newValue;
+                
+                changes.firePropertyChange("value", oldValue, newValue);
+            }
+        };
+    }
+    
+    public IntegerProperty valueProperty() {
+        if (value == null) {
+            initializeProperty();
+        }
         return value;
     }
     
+    public int getFieldValue() {
+        return valueProperty().get();
+    }
+
     public void setFieldValue(int value) {
         if (value < 0 || value > 9) {
             throw new IllegalArgumentException("Value must be between 0 and 9");
         }
-        
-        int oldValue = this.value;
-        this.value = value;
-        changes.firePropertyChange("value", oldValue, value);
+        valueProperty().set(value);
     }
     
     public void addPropertyChangeListener(PropertyChangeListener listener) {
@@ -74,31 +101,45 @@ public class SudokuField implements Serializable, Cloneable, Comparable<SudokuFi
     
     @Override
     public String toString() {
-        return Integer.toString(value);
+        return Integer.toString(getFieldValue());
     }
     
     @Override
     public boolean equals(Object obj) {
-        return EqualsBuilder.reflectionEquals(this, obj, "changes");
+        return EqualsBuilder.reflectionEquals(this, obj, "changes", "value");
     }
 
     @Override
     public int hashCode() {
-        return HashCodeBuilder.reflectionHashCode(this, "changes");
+        return HashCodeBuilder.reflectionHashCode(this, "changes", "value");
     }
     
     @Override
     public int compareTo(SudokuField other) {
-        return Integer.compare(this.value, other.value);
+        return Integer.compare(this.getFieldValue(), other.getFieldValue());
     }
     
     @Override
     public SudokuField clone() {
         try {
-            return (SudokuField) super.clone();
+            SudokuField cloned = (SudokuField) super.clone();
+            cloned.persistentValue = this.persistentValue;
+            cloned.initializeProperty();
+            return cloned;
         } catch (CloneNotSupportedException e) {
-            //This exception is impossible if we properly implement Cloneable
             throw new InternalError("Should not happen since we implement Cloneable", e);
         }
+    }
+    
+    private void writeObject(ObjectOutputStream out) throws IOException {
+        if (value != null) {
+            persistentValue = value.get();
+        }
+        out.defaultWriteObject();
+    }
+    
+    private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        initializeProperty();
     }
 }

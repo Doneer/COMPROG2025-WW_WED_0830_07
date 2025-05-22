@@ -22,20 +22,18 @@
  * SOFTWARE.
  */
 
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/UnitTests/JUnit5TestClass.java to edit this template
- */
-
 package pl.first.sudoku.sudokusolver;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- *
+ * Tests for SudokuField with JavaFX Properties support.
+ * Uses reflection to avoid direct JavaFX dependencies in tests.
  * @author zhuma
  */
 public class SudokuFieldTest {
@@ -60,13 +58,157 @@ public class SudokuFieldTest {
     public void testSetFieldValueWithInvalidValues() {
         SudokuField field = new SudokuField();
         
-        assertThrows(IllegalArgumentException.class, () -> {
+        IllegalArgumentException exception1 = assertThrows(IllegalArgumentException.class, () -> {
             field.setFieldValue(-1);
         }, "Should throw exception for negative value");
         
-        assertThrows(IllegalArgumentException.class, () -> {
+        assertTrue(exception1.getMessage().contains("0 and 9") || 
+                  exception1.getMessage().contains("between"), 
+                  "Exception message should mention valid range");
+        
+        IllegalArgumentException exception2 = assertThrows(IllegalArgumentException.class, () -> {
             field.setFieldValue(10);
         }, "Should throw exception for value out of bounds");
+        
+        assertTrue(exception2.getMessage().contains("0 and 9") || 
+                  exception2.getMessage().contains("between"), 
+                  "Exception message should mention valid range");
+        
+        assertDoesNotThrow(() -> {
+            field.setFieldValue(1);
+            field.setFieldValue(9);
+            field.setFieldValue(0);
+        }, "Valid values should not throw exceptions");
+    }
+    
+    @Test
+    public void testJavaFXPropertyExists() {
+        SudokuField field = new SudokuField();
+        
+        try {
+            Method valuePropertyMethod = field.getClass().getMethod("valueProperty");
+            Object property = valuePropertyMethod.invoke(field);
+            
+            assertNotNull(property, "valueProperty() should return non-null");
+            
+            String className = property.getClass().getName();
+            String simpleClassName = property.getClass().getSimpleName();
+            
+            boolean isJavaFXProperty = className.startsWith("javafx.beans.property") ||
+                                     simpleClassName.contains("IntegerProperty") ||
+                                     simpleClassName.contains("Property") ||
+                                     className.contains("IntegerProperty");
+            
+            if (!isJavaFXProperty) {
+                Class<?>[] interfaces = property.getClass().getInterfaces();
+                for (Class<?> iface : interfaces) {
+                    if (iface.getName().contains("IntegerProperty") || 
+                        iface.getSimpleName().contains("Property")) {
+                        isJavaFXProperty = true;
+                        break;
+                    }
+                }
+            }
+            
+            if (!isJavaFXProperty) {
+                Class<?> superClass = property.getClass().getSuperclass();
+                while (superClass != null && !isJavaFXProperty) {
+                    if (superClass.getName().contains("IntegerProperty") ||
+                        superClass.getSimpleName().contains("Property")) {
+                        isJavaFXProperty = true;
+                        break;
+                    }
+                    superClass = superClass.getSuperclass();
+                }
+            }
+            
+            assertTrue(isJavaFXProperty, 
+                    "Should return an IntegerProperty or JavaFX Property, got: " + className + 
+                    " (simple: " + simpleClassName + ")");
+            
+        } catch (NoSuchMethodException e) {
+            fail("SudokuField must have valueProperty() method for JavaFX binding");
+        } catch (Exception e) {
+            fail("Error accessing valueProperty(): " + e.getMessage());
+        }
+    }
+    
+    @Test
+    public void testJavaFXPropertyValueSync() {
+        SudokuField field = new SudokuField();
+        
+        try {
+            Method valuePropertyMethod = field.getClass().getMethod("valueProperty");
+            Object property = valuePropertyMethod.invoke(field);
+            Method getMethod = property.getClass().getMethod("get");
+            
+            Object propertyValue = getMethod.invoke(property);
+            assertEquals(field.getFieldValue(), ((Number) propertyValue).intValue(), 
+                    "Property value should match field value initially");
+            
+            field.setFieldValue(7);
+            propertyValue = getMethod.invoke(property);
+            assertEquals(7, ((Number) propertyValue).intValue(), 
+                    "Property should be updated when field value changes");
+            
+        } catch (Exception e) {
+            fail("Error testing property value synchronization: " + e.getMessage());
+        }
+    }
+    
+    @Test
+    public void testJavaFXPropertySetValue() {
+        SudokuField field = new SudokuField();
+        
+        try {
+            Method valuePropertyMethod = field.getClass().getMethod("valueProperty");
+            Object property = valuePropertyMethod.invoke(field);
+            Method setMethod = property.getClass().getMethod("set", int.class);
+            
+            setMethod.invoke(property, 6);
+            assertEquals(6, field.getFieldValue(), "Setting through property should update field value");
+            
+        } catch (Exception e) {
+            fail("Error testing property set value: " + e.getMessage());
+        }
+    }
+    
+    @Test
+    public void testJavaFXPropertyValidation() {
+        SudokuField field = new SudokuField();
+        
+        try {
+            Method valuePropertyMethod = field.getClass().getMethod("valueProperty");
+            Object property = valuePropertyMethod.invoke(field);
+            Method setMethod = property.getClass().getMethod("set", int.class);
+            
+            assertThrows(IllegalArgumentException.class, () -> {
+                try {
+                    setMethod.invoke(property, -1);
+                } catch (InvocationTargetException e) {
+                    if (e.getCause() instanceof IllegalArgumentException) {
+                        throw (IllegalArgumentException) e.getCause();
+                    }
+                    throw new RuntimeException("Unexpected exception type", e);
+                }
+            }, "Property should validate negative values");
+            
+            assertThrows(IllegalArgumentException.class, () -> {
+                try {
+                    setMethod.invoke(property, 10);
+                } catch (InvocationTargetException e) {
+                    if (e.getCause() instanceof IllegalArgumentException) {
+                        throw (IllegalArgumentException) e.getCause();
+                    }
+                    throw new RuntimeException("Unexpected exception type", e);
+                }
+            }, "Property should validate values > 9");
+            
+        } catch (NoSuchMethodException e) {
+            fail("Property should have set method for JavaFX binding");
+        } catch (Exception e) {
+            fail("Error testing property validation: " + e.getMessage());
+        }
     }
     
     @Test
@@ -117,6 +259,19 @@ public class SudokuFieldTest {
         SudokuField clone = original.clone();
 
         assertEquals(original.getFieldValue(), clone.getFieldValue(), "Cloned field should have same value");
+        
+        try {
+            Method valuePropertyMethod = clone.getClass().getMethod("valueProperty");
+            Object clonedProperty = valuePropertyMethod.invoke(clone);
+            assertNotNull(clonedProperty, "Cloned field should have its own property");
+            
+            Method getMethod = clonedProperty.getClass().getMethod("get");
+            Object propertyValue = getMethod.invoke(clonedProperty);
+            assertEquals(5, ((Number) propertyValue).intValue(), "Cloned property should have correct value");
+            
+        } catch (Exception e) {
+            fail("Error testing cloned field property: " + e.getMessage());
+        }
 
         clone.setFieldValue(8);
 
@@ -178,23 +333,69 @@ public class SudokuFieldTest {
         SudokuField field1 = new SudokuField();
         SudokuField field2 = new SudokuField();
 
-        // Test reflexivity
         assertTrue(field1.equals(field1), "Field should equal itself");
 
-        // Test with default values
         assertTrue(field1.equals(field2), "Fields with same value should be equal");
         assertTrue(field2.equals(field1), "Fields with same value should be equal (symmetry)");
         assertEquals(field1.hashCode(), field2.hashCode(), "Equal fields should have same hash code");
 
-        // Test with same non-default values
         field1.setFieldValue(5);
         field2.setFieldValue(5);
         assertTrue(field1.equals(field2), "Fields with same value should be equal");
         assertEquals(field1.hashCode(), field2.hashCode(), "Equal fields should have same hash code");
 
-        // Test with different values
         field2.setFieldValue(7);
         assertFalse(field1.equals(field2), "Fields with different values should not be equal");
         assertNotEquals(field1.hashCode(), field2.hashCode(), "Different fields should have different hash codes");
+    }
+    
+    @Test
+    public void testSerializationAndPropertyRecreation() {
+        SudokuField field = new SudokuField();
+        field.setFieldValue(6);
+        
+        assertEquals(6, field.getFieldValue(), "Field should maintain value");
+        
+        try {
+            Method valuePropertyMethod = field.getClass().getMethod("valueProperty");
+            Object property = valuePropertyMethod.invoke(field);
+            Method getMethod = property.getClass().getMethod("get");
+            Object propertyValue = getMethod.invoke(property);
+            assertEquals(6, ((Number) propertyValue).intValue(), "Property should have same value");
+        } catch (Exception e) {
+            fail("Property should work after field creation: " + e.getMessage());
+        }
+        
+        SudokuField cloned = field.clone();
+        assertEquals(6, cloned.getFieldValue(), "Cloned field should have same value");
+        
+        try {
+            Method valuePropertyMethod = cloned.getClass().getMethod("valueProperty");
+            Object property = valuePropertyMethod.invoke(cloned);
+            Method getMethod = property.getClass().getMethod("get");
+            Object propertyValue = getMethod.invoke(property);
+            assertEquals(6, ((Number) propertyValue).intValue(), "Cloned property should have same value");
+        } catch (Exception e) {
+            fail("Cloned property should work: " + e.getMessage());
+        }
+    }
+    
+    @Test
+    public void testValidValueRange() {
+        SudokuField field = new SudokuField();
+        
+        for (int i = 0; i <= 9; i++) {
+            final int value = i;
+            assertDoesNotThrow(() -> field.setFieldValue(value), 
+                    "Value " + value + " should be valid");
+            assertEquals(value, field.getFieldValue(), 
+                    "Field should store value " + value);
+        }
+        
+        int[] invalidValues = {-10, -1, 10, 15, 100};
+        for (int invalid : invalidValues) {
+            assertThrows(IllegalArgumentException.class, () -> field.setFieldValue(invalid), 
+                    "Value " + invalid + " should be invalid");
+        }
     }
 }

@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2025 Daniyar Zhumatayev, Kuzma Martysiuk
+ * Copyright 2025 Daniyar Zhumatayev, Kuzma Martysiuk
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -25,6 +25,7 @@
 package pl.first.sudoku.view;
 
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -42,6 +43,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.text.Font;
 import javafx.stage.Stage;
+import javafx.util.StringConverter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pl.first.sudoku.dao.Dao;
@@ -50,6 +52,7 @@ import pl.first.sudoku.dao.SudokuBoardDaoFactory;
 import pl.first.sudoku.sudokusolver.BacktrackingSudokuSolver;
 import pl.first.sudoku.sudokusolver.EditableSudokuBoardDecorator;
 import pl.first.sudoku.sudokusolver.SudokuBoard;
+import pl.first.sudoku.sudokusolver.SudokuField;
 
 import java.io.IOException;
 import java.net.URL;
@@ -59,7 +62,7 @@ import java.util.Optional;
 import java.util.ResourceBundle;
 
 /**
- * Controller for the sudoku board view.
+ * Controller for the sudoku board view with JavaFX Property binding support.
  * @author zhuma
  */
 public class SudokuBoardController implements Initializable {
@@ -98,9 +101,7 @@ public class SudokuBoardController implements Initializable {
     public void initialize(URL url, ResourceBundle rb) {
         languageManager = LanguageManager.getInstance();
         fields = new TextField[9][9];
-        SudokuFieldConverter converter = new SudokuFieldConverter();
         
-        // Creating the grid of text fields for the board
         for (int row = 0; row < 9; row++) {
             for (int col = 0; col < 9; col++) {
                 TextField field = new TextField();
@@ -120,14 +121,13 @@ public class SudokuBoardController implements Initializable {
                 }
                 
                 field.setStyle(style.toString());
-                field.setTextFormatter(SudokuTextFormatter.createFormatter(converter));
+                field.setTextFormatter(SudokuTextFormatter.createFormatter(new SudokuFieldConverter()));
                 
                 sudokuGrid.add(field, col, row);
                 fields[row][col] = field;
             }
         }
         
-        // Create a default board if none exists
         if (board == null) {
             board = new SudokuBoard(new BacktrackingSudokuSolver());
             board.solveGame();
@@ -142,6 +142,63 @@ public class SudokuBoardController implements Initializable {
         updateBoard();
         
         Platform.runLater(this::setStageTitle);
+    }
+    
+    private static class SudokuFieldStringConverter extends StringConverter<Number> {
+        
+        @Override
+        public String toString(Number value) {
+            if (value == null || value.intValue() == 0) {
+                return "";
+            }
+            return value.toString();
+        }
+        
+        @Override
+        public Number fromString(String string) {
+            if (string == null || string.trim().isEmpty()) {
+                return 0;
+            }
+            try {
+                int value = Integer.parseInt(string.trim());
+                if (value >= 1 && value <= 9) {
+                    return value;
+                } else {
+                    return 0;
+                }
+            } catch (NumberFormatException e) {
+                return 0;
+            }
+        }
+    }
+    
+    private void setupFieldBinding(TextField field, int row, int col) {
+        if (board == null) {
+            logger.warn("Cannot setup binding: board is null");
+            return;
+        }
+        
+        SudokuField sudokuField = board.getSudokuField(row, col);
+        
+        Bindings.bindBidirectional(
+            field.textProperty(), 
+            sudokuField.valueProperty(), 
+            new SudokuFieldStringConverter()
+        );
+        
+        logger.debug("Set up bidirectional binding for field at [{},{}]", row, col);
+    }
+    
+    private void removeFieldBinding(TextField field, int row, int col) {
+        if (board == null) {
+            return;
+        }
+        
+        SudokuField sudokuField = board.getSudokuField(row, col);
+        
+        Bindings.unbindBidirectional(field.textProperty(), sudokuField.valueProperty());
+        
+        logger.debug("Removed binding for field at [{},{}]", row, col);
     }
     
     private void updateTexts() {
@@ -294,7 +351,6 @@ public class SudokuBoardController implements Initializable {
             logger.debug("Saving game to file: {}", filename);
 
             try (Dao<EditableSudokuBoardDecorator> dao = SudokuBoardDaoFactory.getEditableFileDao(SAVE_DIRECTORY)) {
-                // Save the decorated board to preserve editable state
                 dao.write(filename, decoratedBoard);
 
                 logger.info("Game saved successfully to {}", filename);
@@ -369,10 +425,8 @@ public class SudokuBoardController implements Initializable {
                 try {
                     logger.debug("Loading game from file: {}", filename);
 
-                    // Load the decorated board
                     decoratedBoard = dao.read(filename);
                     
-                    // Get the wrapped SudokuBoard
                     board = decoratedBoard.getSudokuBoard();
                     
                     updateBoard();
@@ -415,7 +469,6 @@ public class SudokuBoardController implements Initializable {
     }
     
     private void updateBoard() {
-        // Check if decoratedBoard is null before using it
         if (decoratedBoard == null && board != null) {
             decoratedBoard = new EditableSudokuBoardDecorator(board);
             decoratedBoard.lockNonEmptyFields();
@@ -428,15 +481,16 @@ public class SudokuBoardController implements Initializable {
         
         for (int row = 0; row < 9; row++) {
             for (int col = 0; col < 9; col++) {
-                int value = board.getValueAt(row, col);
+                removeFieldBinding(fields[row][col], row, col);
+            }
+        }
+        
+        for (int row = 0; row < 9; row++) {
+            for (int col = 0; col < 9; col++) {
                 TextField field = fields[row][col];
                 boolean isEditable = decoratedBoard.isFieldEditable(row, col);
                 
-                if (value == 0) {
-                    field.setText("");
-                } else {
-                    field.setText(Integer.toString(value));
-                }
+                setupFieldBinding(field, row, col);
                 
                 field.setEditable(isEditable);
                 if (isEditable) {
@@ -444,31 +498,10 @@ public class SudokuBoardController implements Initializable {
                 } else {
                     field.setStyle(field.getStyle() + " -fx-text-fill: black; -fx-background-color: #f0f0f0;");
                 }
-                
-                final int finalRow = row;
-                final int finalCol = col;
-                
-                field.textProperty().addListener((observable, oldValue, newValue) -> {
-                    if (decoratedBoard.isFieldEditable(finalRow, finalCol)) {
-                        try {
-                            int val = newValue.isEmpty() ? 0 : Integer.parseInt(newValue);
-                            if (val >= 0 && val <= 9) {
-                                try {
-                                    // Use the decorator to set the value
-                                    decoratedBoard.setValueAt(finalRow, finalCol, val);
-                                } catch (IllegalStateException e) {
-                                    // Field is not editable, revert to old value
-                                    logger.debug("Attempted to modify non-editable field: {}", e.getMessage());
-                                    field.setText(oldValue);
-                                }
-                            }
-                        } catch (NumberFormatException e) {
-                            logger.debug("Invalid input format ignored: {}", e.getMessage());
-                        }
-                    }
-                });
             }
         }
+        
+        logger.debug("Board updated with JavaFX Property bindings");
     }
     
     private void showAlert(Alert.AlertType type, String title, String content) {
