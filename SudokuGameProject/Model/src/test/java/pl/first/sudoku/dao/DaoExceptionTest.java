@@ -242,4 +242,74 @@ public class DaoExceptionTest {
             assertNotNull(namesException.getMessage(), "Message should not be null even with null details");
         });
     }
+    
+    @Test
+    public void testDaoExceptionConstructors() {
+        String message = "Test error message";
+        Exception cause = new RuntimeException("Test cause");
+
+        DaoException exception1 = new DaoException(message);
+        assertEquals(message, exception1.getMessage(), "Message should match");
+        assertNull(exception1.getCause(), "Cause should be null");
+
+        DaoException exception2 = new DaoException(message, cause);
+        assertEquals(message, exception2.getMessage(), "Message should match");
+        assertEquals(cause, exception2.getCause(), "Cause should match");
+    }
+
+    @Test
+    public void testAllExceptionPaths() {
+        RuntimeException cause = new RuntimeException("Test cause");
+
+        DaoException readEx1 = DaoException.createReadException("test details", cause);
+        DaoException readEx2 = DaoException.createReadException("test", null);
+        DaoException readEx3 = DaoException.createReadException("", cause);
+
+        DaoException writeEx1 = DaoException.createWriteException("test details", cause);
+        DaoException writeEx2 = DaoException.createWriteException("test", null);
+        DaoException writeEx3 = DaoException.createWriteException("", cause);
+
+        DaoException namesEx1 = DaoException.createNamesException("test details", cause);
+        DaoException namesEx2 = DaoException.createNamesException("test", null);
+        DaoException namesEx3 = DaoException.createNamesException("", cause);
+
+        assertNotNull(readEx1, "Read exception with details and cause should be created");
+        assertNotNull(readEx2, "Read exception with details only should be created");
+        assertNotNull(readEx3, "Read exception with empty details should be created");
+
+        assertNotNull(writeEx1, "Write exception with details and cause should be created");
+        assertNotNull(writeEx2, "Write exception with details only should be created");
+        assertNotNull(writeEx3, "Write exception with empty details should be created");
+
+        assertNotNull(namesEx1, "Names exception with details and cause should be created");
+        assertNotNull(namesEx2, "Names exception with details only should be created");
+        assertNotNull(namesEx3, "Names exception with empty details should be created");
+
+        assertFalse(readEx1.getMessage().trim().isEmpty(), "Message should not be empty");
+        assertFalse(writeEx1.getMessage().trim().isEmpty(), "Message should not be empty");
+        assertFalse(namesEx1.getMessage().trim().isEmpty(), "Message should not be empty");
+
+        assertEquals(cause, readEx1.getCause(), "Cause should be set correctly");
+        assertEquals(cause, writeEx1.getCause(), "Cause should be set correctly");
+        assertEquals(cause, namesEx1.getCause(), "Cause should be set correctly");
+
+        assertNull(readEx2.getCause(), "Cause should be null when not provided");
+        assertNull(writeEx2.getCause(), "Cause should be null when not provided");
+        assertNull(namesEx2.getCause(), "Cause should be null when not provided");
+    }
+
+    @Test
+    public void testExceptionMessageFormatting() {
+        DaoException ex1 = DaoException.createReadException("", new RuntimeException());
+        DaoException ex2 = DaoException.createWriteException("test file", new RuntimeException());
+        DaoException ex3 = DaoException.createNamesException("directory path", new RuntimeException());
+
+        assertNotNull(ex1.getMessage(), "Exception message should not be null");
+        assertNotNull(ex2.getMessage(), "Exception message should not be null");
+        assertNotNull(ex3.getMessage(), "Exception message should not be null");
+
+        assertFalse(ex1.getMessage().trim().isEmpty(), "Message should not be empty");
+        assertFalse(ex2.getMessage().trim().isEmpty(), "Message should not be empty");
+        assertFalse(ex3.getMessage().trim().isEmpty(), "Message should not be empty");
+    }
 }

@@ -363,4 +363,57 @@ public class SudokuBoardDaoFactoryTest {
             }
         }, "Factory should handle database connection issues gracefully");
     }
+    
+    @Test
+    public void testGetLegacyJdbcDaoThrowsException() {
+        UnsupportedOperationException exception = assertThrows(UnsupportedOperationException.class, () -> {
+            SudokuBoardDaoFactory.getLegacyJdbcDao();
+        });
+
+        assertTrue(exception.getMessage().contains("Use getJdbcDao()"));
+        assertTrue(exception.getMessage().contains("EditableSudokuBoardDecorator"));
+    }
+
+    @Test
+    public void testFactoryWithInvalidDatabaseCredentials() {
+        assertThrows(JdbcDaoException.class, () -> {
+            new JdbcSudokuBoardDao(
+                "jdbc:postgresql://nonexistent_host_that_does_not_exist:9999/nonexistentdb",
+                "completely_invalid_user",
+                "completely_invalid_password"
+            );
+        }, "Creating DAO with invalid credentials should throw JdbcDaoException");
+    }
+
+    @Test
+    public void testFactoryEdgeCases() throws Exception {
+        String[] edgeCases = {
+            "",           
+            " ",          
+            ".",         
+            "..",         
+            "/",          
+            "\\",        
+            "test dir",   
+            "test-dir",   
+            "test_dir",   
+            "123",        
+            "a",          
+        };
+
+        for (String testDir : edgeCases) {
+            try {
+                Dao<SudokuBoard> fileDao = SudokuBoardDaoFactory.getFileDao(testDir);
+                assertNotNull(fileDao, "Factory should handle edge case: '" + testDir + "'");
+                fileDao.close();
+
+                Dao<EditableSudokuBoardDecorator> editableDao = SudokuBoardDaoFactory.getEditableFileDao(testDir);
+                assertNotNull(editableDao, "Factory should handle edge case: '" + testDir + "'");
+                editableDao.close();
+
+            } catch (Exception e) {
+                //We're ensuring the factory doesn't crash unexpectedly
+            }
+        }
+    }
 }

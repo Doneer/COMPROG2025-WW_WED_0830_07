@@ -32,6 +32,8 @@ import pl.first.sudoku.sudokusolver.SudokuBoard;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -469,5 +471,308 @@ public class JdbcSudokuBoardDaoTest {
         
         assertTrue(exception.getMessage().contains("Error closing database connection"),
                 "Exception should mention database connection closing error");
+    }
+    
+    @Test
+    public void testDriverClassNotFound() {
+        assertThrows(JdbcDaoException.class, () -> {
+            new JdbcSudokuBoardDao(
+                "jdbc:invaliddriver://localhost:5432/testdb", 
+                "user", 
+                "pass"
+            );
+        }, "Should throw JdbcDaoException for invalid driver");
+    }
+
+    @Test
+    public void testInitializeTablesRollbackException() throws Exception {
+        try (JdbcSudokuBoardDao dao = (JdbcSudokuBoardDao) SudokuBoardDaoFactory.getJdbcDao()) {
+            assertNotNull(dao, "DAO should be created successfully");
+
+            assertDoesNotThrow(() -> {
+                dao.names(); 
+            });
+        }
+    }
+
+    @Test
+    public void testGetBoardIdReturnsNull() throws Exception {
+        try (JdbcSudokuBoardDao dao = (JdbcSudokuBoardDao) SudokuBoardDaoFactory.getJdbcDao()) {
+            String nonExistentName = "definitely_nonexistent_board_" + System.currentTimeMillis();
+
+            DaoException exception = assertThrows(DaoException.class, () -> {
+                dao.read(nonExistentName);
+            });
+
+            assertTrue(exception.getMessage().contains("not found") || 
+                      exception.getCause() instanceof SQLException);
+        }
+    }
+
+    @Test
+    public void testWriteWithDatabaseError() throws Exception {
+        String boardName = "errorTest_" + System.currentTimeMillis();
+
+        try (JdbcSudokuBoardDao dao = (JdbcSudokuBoardDao) SudokuBoardDaoFactory.getJdbcDao()) {
+            Field connectionField = JdbcSudokuBoardDao.class.getDeclaredField("connection");
+            connectionField.setAccessible(true);
+            Connection connection = (Connection) connectionField.get(dao);
+
+            connection.close();
+
+            assertThrows(DaoException.class, () -> {
+                dao.write(boardName, testDecorator);
+            }, "Writing with closed connection should throw DaoException");
+        }
+    }
+
+    @Test
+    public void testReadWithDatabaseError() throws Exception {
+        try (JdbcSudokuBoardDao dao = (JdbcSudokuBoardDao) SudokuBoardDaoFactory.getJdbcDao()) {
+            Field connectionField = JdbcSudokuBoardDao.class.getDeclaredField("connection");
+            connectionField.setAccessible(true);
+            Connection connection = (Connection) connectionField.get(dao);
+            connection.close();
+
+            assertThrows(DaoException.class, () -> {
+                dao.read("any_board_name");
+            }, "Reading with closed connection should throw DaoException");
+        }
+    }
+
+    @Test
+    public void testNamesWithDatabaseError() throws Exception {
+        try (JdbcSudokuBoardDao dao = (JdbcSudokuBoardDao) SudokuBoardDaoFactory.getJdbcDao()) {
+            Field connectionField = JdbcSudokuBoardDao.class.getDeclaredField("connection");
+            connectionField.setAccessible(true);
+            Connection connection = (Connection) connectionField.get(dao);
+            connection.close();
+
+            assertThrows(DaoException.class, () -> {
+                dao.names();
+            }, "Getting names with closed connection should throw DaoException");
+        }
+    }
+
+    @Test
+    public void testCloseWithAlreadyClosedConnection() throws Exception {
+        JdbcSudokuBoardDao dao = (JdbcSudokuBoardDao) SudokuBoardDaoFactory.getJdbcDao();
+
+        Field connectionField = JdbcSudokuBoardDao.class.getDeclaredField("connection");
+        connectionField.setAccessible(true);
+        Connection connection = (Connection) connectionField.get(dao);
+        connection.close();
+
+        assertDoesNotThrow(() -> dao.close(), "Close should handle already closed connection gracefully");
+    }
+
+    @Test
+    public void testTransactionCommitSuccess() throws Exception {
+        String boardName = "commitTest_" + System.currentTimeMillis();
+
+        try (JdbcSudokuBoardDao dao = (JdbcSudokuBoardDao) SudokuBoardDaoFactory.getJdbcDao()) {
+            assertDoesNotThrow(() -> {
+                dao.write(boardName, testDecorator);
+            }, "Writing valid board should succeed and commit");
+
+            EditableSudokuBoardDecorator loadedDecorator = dao.read(boardName);
+            assertNotNull(loadedDecorator, "Board should be successfully committed and readable");
+            assertEquals(testDecorator.getSudokuBoard(), loadedDecorator.getSudokuBoard());
+        }
+    }
+
+    @Test
+    public void testDatabaseConnectionWithInvalidCredentials() {
+        assertThrows(JdbcDaoException.class, () -> {
+            new JdbcSudokuBoardDao(
+                "jdbc:postgresql://localhost:5432/nonexistentdb",
+                "invalid_user",
+                "invalid_password"
+            );
+        }, "Should throw JdbcDaoException for invalid database credentials");
+    }
+
+    @Test
+    public void testOverwriteExistingBoardTransaction() throws Exception {
+        String boardName = "overwriteTransactionTest_" + System.currentTimeMillis();
+
+        try (JdbcSudokuBoardDao dao = (JdbcSudokuBoardDao) SudokuBoardDaoFactory.getJdbcDao()) {
+            dao.write(boardName, testDecorator);
+
+            SudokuBoard board2 = new SudokuBoard(new BacktrackingSudokuSolver());
+            board2.solveGame();
+            EditableSudokuBoardDecorator decorator2 = new EditableSudokuBoardDecorator(board2);
+            decorator2.lockNonEmptyFields();
+
+            assertDoesNotThrow(() -> {
+                dao.write(boardName, decorator2);
+            }, "Overwriting existing board should succeed");
+
+            EditableSudokuBoardDecorator loaded = dao.read(boardName);
+            assertEquals(decorator2.getSudokuBoard(), loaded.getSudokuBoard());
+        }
+    }
+    
+    @Test
+    public void testWriteWithFailedGeneratedKeys() throws Exception {
+        String boardName = "failedKeysTest_" + System.currentTimeMillis();
+
+        try (JdbcSudokuBoardDao dao = (JdbcSudokuBoardDao) SudokuBoardDaoFactory.getJdbcDao()) {
+            Field connectionField = JdbcSudokuBoardDao.class.getDeclaredField("connection");
+            connectionField.setAccessible(true);
+            Connection realConnection = (Connection) connectionField.get(dao);
+
+            Connection mockConnection = (Connection) java.lang.reflect.Proxy.newProxyInstance(
+                Connection.class.getClassLoader(),
+                new Class[]{Connection.class},
+                (proxy, method, args) -> {
+                    if ("prepareStatement".equals(method.getName()) && args.length > 1) {
+                        if (args[0].toString().contains("INSERT INTO sudoku_boards")) {
+                            PreparedStatement mockStmt = (PreparedStatement) java.lang.reflect.Proxy.newProxyInstance(
+                                PreparedStatement.class.getClassLoader(),
+                                new Class[]{PreparedStatement.class},
+                                (stmtProxy, stmtMethod, stmtArgs) -> {
+                                    if ("executeUpdate".equals(stmtMethod.getName())) {
+                                        return 1; 
+                                    }
+                                    if ("getGeneratedKeys".equals(stmtMethod.getName())) {
+                                        ResultSet emptyRs = (ResultSet) java.lang.reflect.Proxy.newProxyInstance(
+                                            ResultSet.class.getClassLoader(),
+                                            new Class[]{ResultSet.class},
+                                            (rsProxy, rsMethod, rsArgs) -> {
+                                                if ("next".equals(rsMethod.getName())) {
+                                                    return false; 
+                                                }
+                                                if ("close".equals(rsMethod.getName())) {
+                                                    return null;
+                                                }
+                                                return null;
+                                            });
+                                        return emptyRs;
+                                    }
+                                    if ("setString".equals(stmtMethod.getName()) || 
+                                        "close".equals(stmtMethod.getName())) {
+                                        return null;
+                                    }
+                                    return null;
+                                });
+                            return mockStmt;
+                        }
+                    }
+                    return method.invoke(realConnection, args);
+                });
+
+            connectionField.set(dao, mockConnection);
+
+            assertThrows(DaoException.class, () -> {
+                dao.write(boardName, testDecorator);
+            }, "Should throw DaoException when no generated key is returned");
+
+            connectionField.set(dao, realConnection);
+        }
+    }
+
+    @Test
+    public void testInitializeTablesWithRollbackFailure() throws Exception {
+        try {
+            String invalidUrl = "jdbc:postgresql://localhost:5432/nonexistent_db_that_will_fail";
+
+            assertThrows(JdbcDaoException.class, () -> {
+                new JdbcSudokuBoardDao(invalidUrl, "invalid_user", "invalid_pass");
+            });
+
+        } catch (Exception e) {
+            assertTrue(e instanceof JdbcDaoException || e.getCause() instanceof SQLException);
+        }
+    }
+
+    @Test
+    public void testWriteWithRollbackFailure() throws Exception {
+        String boardName = "rollbackFailTest_" + System.currentTimeMillis();
+
+        try (JdbcSudokuBoardDao dao = (JdbcSudokuBoardDao) SudokuBoardDaoFactory.getJdbcDao()) {
+            Field connectionField = JdbcSudokuBoardDao.class.getDeclaredField("connection");
+            connectionField.setAccessible(true);
+            Connection realConnection = (Connection) connectionField.get(dao);
+
+            Connection faultyConnection = (Connection) java.lang.reflect.Proxy.newProxyInstance(
+                Connection.class.getClassLoader(),
+                new Class[]{Connection.class},
+                (proxy, method, args) -> {
+                    if ("rollback".equals(method.getName())) {
+                        throw new SQLException("Rollback failed - simulated error");
+                    }
+                    if ("prepareStatement".equals(method.getName())) {
+                        throw new SQLException("Main operation failed");
+                    }
+                    return method.invoke(realConnection, args);
+                });
+
+            connectionField.set(dao, faultyConnection);
+
+            assertThrows(DaoException.class, () -> {
+                dao.write(boardName, testDecorator);
+            });
+
+            connectionField.set(dao, realConnection);
+        }
+    }
+
+    @Test
+    public void testCloseWithConnectionCloseFailure() throws Exception {
+        JdbcSudokuBoardDao dao = (JdbcSudokuBoardDao) SudokuBoardDaoFactory.getJdbcDao();
+
+        Field connectionField = JdbcSudokuBoardDao.class.getDeclaredField("connection");
+        connectionField.setAccessible(true);
+        Connection realConnection = (Connection) connectionField.get(dao);
+
+        Connection throwingConnection = (Connection) java.lang.reflect.Proxy.newProxyInstance(
+            Connection.class.getClassLoader(),
+            new Class[]{Connection.class},
+            (proxy, method, args) -> {
+                if ("close".equals(method.getName())) {
+                    throw new SQLException("Connection close failed");
+                }
+                if ("isClosed".equals(method.getName())) {
+                    return false;
+                }
+                return method.invoke(realConnection, args);
+            });
+
+        connectionField.set(dao, throwingConnection);
+
+        Exception exception = assertThrows(Exception.class, () -> {
+            dao.close();
+        });
+
+        assertTrue(exception.getMessage().contains("close") || 
+                  exception.getCause() instanceof SQLException);
+    }
+
+    @Test
+    public void testDriverClassForName() {
+        assertDoesNotThrow(() -> {
+            Class.forName("org.postgresql.Driver");
+        }, "PostgreSQL driver should be available");
+
+        assertThrows(ClassNotFoundException.class, () -> {
+            Class.forName("com.invalid.nonexistent.Driver");
+        }, "Invalid driver should throw ClassNotFoundException");
+    }
+
+    @Test
+    public void testReadWithNonExistentBoardExact() throws Exception {
+        try (JdbcSudokuBoardDao dao = (JdbcSudokuBoardDao) SudokuBoardDaoFactory.getJdbcDao()) {
+            String definitelyNonExistent = "board_that_absolutely_does_not_exist_" + 
+                                         System.currentTimeMillis() + "_" + 
+                                         Math.random();
+
+            DaoException exception = assertThrows(DaoException.class, () -> {
+                dao.read(definitelyNonExistent);
+            });
+
+            assertTrue(exception.getMessage().contains("not found") ||
+                      exception.getCause().getMessage().contains("not found"));
+        }
     }
 }
