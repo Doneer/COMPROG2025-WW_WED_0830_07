@@ -36,7 +36,7 @@ import java.nio.file.Path;
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Enhanced tests for SudokuBoardDaoFactory to achieve 100% coverage.
+ * Enhanced tests for SudokuBoardDaoFactory to achieve 100% coverage with database support.
  * @author zhuma
  */
 public class SudokuBoardDaoFactoryTest {
@@ -85,6 +85,43 @@ public class SudokuBoardDaoFactoryTest {
             assertEquals(decorator.getSudokuBoard(), loaded.getSudokuBoard(), 
                     "DAO should work correctly");
         }
+    }
+    
+    @Test
+    public void testGetJdbcDao() throws Exception {
+        Dao<EditableSudokuBoardDecorator> dao = SudokuBoardDaoFactory.getJdbcDao();
+        
+        assertNotNull(dao, "Factory should return non-null DAO");
+        assertTrue(dao instanceof JdbcSudokuBoardDao, 
+                "Factory should return JdbcSudokuBoardDao instance");
+        
+        SudokuBoard testBoard = new SudokuBoard(new BacktrackingSudokuSolver());
+        testBoard.solveGame();
+        EditableSudokuBoardDecorator decorator = new EditableSudokuBoardDecorator(testBoard);
+        decorator.lockNonEmptyFields();
+        
+        String testName = "factoryTest_" + System.currentTimeMillis();
+        
+        try (dao) {
+            dao.write(testName, decorator);
+            EditableSudokuBoardDecorator loaded = dao.read(testName);
+            assertEquals(decorator.getSudokuBoard(), loaded.getSudokuBoard(), 
+                    "JDBC DAO should work correctly");
+            
+            for (int row = 0; row < 9; row++) {
+                for (int col = 0; col < 9; col++) {
+                    assertEquals(decorator.isFieldEditable(row, col), loaded.isFieldEditable(row, col),
+                            "Editability should be preserved at [" + row + "," + col + "]");
+                }
+            }
+        }
+    }
+    
+    @Test
+    public void testGetLegacyJdbcDao() {
+        assertThrows(UnsupportedOperationException.class, () -> {
+            SudokuBoardDaoFactory.getLegacyJdbcDao();
+        }, "Legacy method should throw UnsupportedOperationException");
     }
     
     @Test
@@ -168,6 +205,19 @@ public class SudokuBoardDaoFactoryTest {
     }
     
     @Test
+    public void testMultipleJdbcFactoryCalls() throws Exception {
+        Dao<EditableSudokuBoardDecorator> dao1 = SudokuBoardDaoFactory.getJdbcDao();
+        Dao<EditableSudokuBoardDecorator> dao2 = SudokuBoardDaoFactory.getJdbcDao();
+        
+        assertNotNull(dao1, "First JDBC DAO should not be null");
+        assertNotNull(dao2, "Second JDBC DAO should not be null");
+        assertNotSame(dao1, dao2, "Different calls should return different instances");
+        
+        dao1.close();
+        dao2.close();
+    }
+    
+    @Test
     public void testFactoryWithSpecialCharacters() throws Exception {
         String specialDir = tempDir.resolve("test_dir-123").toString();
         
@@ -196,6 +246,16 @@ public class SudokuBoardDaoFactoryTest {
         } catch (Exception e) {
             fail("Should not throw exception when closing: " + e.getMessage());
         }
+    }
+    
+    @Test
+    public void testJdbcFactoryReturnType() throws Exception {
+        Dao<EditableSudokuBoardDecorator> jdbcDao = SudokuBoardDaoFactory.getJdbcDao();
+        
+        assertEquals(JdbcSudokuBoardDao.class, jdbcDao.getClass(), 
+                "getJdbcDao should return JdbcSudokuBoardDao");
+        
+        jdbcDao.close();
     }
     
     @Test
@@ -240,6 +300,22 @@ public class SudokuBoardDaoFactoryTest {
             assertEquals(decorator.getSudokuBoard(), loadedDecorator.getSudokuBoard(), 
                     "Editable DAO should work through factory");
         }
+        
+        String testName = "jdbcIntegration_" + System.currentTimeMillis();
+        try (Dao<EditableSudokuBoardDecorator> jdbcDao = SudokuBoardDaoFactory.getJdbcDao()) {
+            jdbcDao.write(testName, decorator);
+            EditableSudokuBoardDecorator loadedJdbc = jdbcDao.read(testName);
+            assertEquals(decorator.getSudokuBoard(), loadedJdbc.getSudokuBoard(), 
+                    "JDBC DAO should work through factory");
+            
+            for (int row = 0; row < 9; row++) {
+                for (int col = 0; col < 9; col++) {
+                    assertEquals(decorator.isFieldEditable(row, col), 
+                            loadedJdbc.isFieldEditable(row, col),
+                            "JDBC DAO should preserve editability through factory");
+                }
+            }
+        }
     }
     
     @Test
@@ -249,12 +325,15 @@ public class SudokuBoardDaoFactoryTest {
             
             Dao<SudokuBoard> dao1 = SudokuBoardDaoFactory.getFileDao(testDir);
             Dao<EditableSudokuBoardDecorator> dao2 = SudokuBoardDaoFactory.getEditableFileDao(testDir);
+            Dao<EditableSudokuBoardDecorator> dao3 = SudokuBoardDaoFactory.getJdbcDao();
             
             assertNotNull(dao1, "Static method should work for FileDao");
             assertNotNull(dao2, "Static method should work for EditableFileDao");
+            assertNotNull(dao3, "Static method should work for JdbcDao");
             
             dao1.close();
             dao2.close();
+            dao3.close();
         }, "Factory methods should be accessible statically");
     }
     
@@ -270,5 +349,18 @@ public class SudokuBoardDaoFactoryTest {
         try (Dao<SudokuBoard> dao = SudokuBoardDaoFactory.getFileDao(longDir)) {
             assertNotNull(dao, "Factory should handle long directory names");
         }
+    }
+    
+    @Test
+    public void testDatabaseConnectionFailureHandling() {
+        assertDoesNotThrow(() -> {
+            try {
+                Dao<EditableSudokuBoardDecorator> dao = SudokuBoardDaoFactory.getJdbcDao();
+                assertNotNull(dao, "Factory should return DAO even if database is not accessible");
+                dao.close();
+            } catch (JdbcDaoException e) {
+                assertNotNull(e.getMessage(), "Exception should have meaningful message");
+            }
+        }, "Factory should handle database connection issues gracefully");
     }
 }

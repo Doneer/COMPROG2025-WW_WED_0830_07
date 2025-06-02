@@ -30,6 +30,7 @@ import pl.first.sudoku.sudokusolver.SudokuBoard;
 /**
  * Factory class for creating Dao objects for SudokuBoard instances.
  * Uses the factory pattern to abstract the creation of specific Dao implementations.
+ * Includes database support for EditableSudokuBoardDecorator.
  * @author zhuma
  */
 public class SudokuBoardDaoFactory {
@@ -39,5 +40,15 @@ public class SudokuBoardDaoFactory {
     
     public static Dao<EditableSudokuBoardDecorator> getEditableFileDao(String directoryName) {
         return new EditableSudokuBoardDao(directoryName);
+    }
+    
+    public static Dao<EditableSudokuBoardDecorator> getJdbcDao() throws JdbcDaoException {
+        return new JdbcSudokuBoardDao();
+    }
+    
+    @Deprecated
+    public static Dao<SudokuBoard> getLegacyJdbcDao() throws JdbcDaoException {
+        throw new UnsupportedOperationException(
+            "Use getJdbcDao() which returns Dao<EditableSudokuBoardDecorator> for full functionality");
     }
 }

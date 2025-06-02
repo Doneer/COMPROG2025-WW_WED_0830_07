@@ -32,10 +32,13 @@ module SudokuGameModel {
     requires javafx.fxml;
     requires java.desktop;  
     requires java.base;
+    requires java.sql;
     requires org.apache.commons.lang3;
+    requires org.postgresql.jdbc;
     
     requires org.slf4j;
     requires org.apache.logging.log4j;
+   
     
     provides java.util.ResourceBundle with 
         pl.first.sudoku.resources.AuthorsBundle_en,

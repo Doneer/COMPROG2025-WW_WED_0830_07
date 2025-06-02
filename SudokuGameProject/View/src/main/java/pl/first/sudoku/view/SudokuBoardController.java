@@ -88,6 +88,12 @@ public class SudokuBoardController implements Initializable {
     private Button loadGameButton;
     
     @FXML
+    private Button saveDbButton;
+
+    @FXML
+    private Button loadDbButton;
+    
+    @FXML
     private Button languageButton;
     
     private SudokuBoard board;
@@ -209,8 +215,10 @@ public class SudokuBoardController implements Initializable {
         checkSolutionButton.setText(messages.getString("button.checkSolution"));
         saveGameButton.setText(messages.getString("button.saveGame"));
         loadGameButton.setText(messages.getString("button.loadGame"));
+        saveDbButton.setText(messages.getString("button.saveToDatabase"));
+        loadDbButton.setText(messages.getString("button.loadFromDatabase"));
         languageButton.setText(messages.getString("button.changeLanguage"));
-        
+
         Platform.runLater(this::setStageTitle);
     }
     
@@ -312,52 +320,25 @@ public class SudokuBoardController implements Initializable {
     private void saveGame() {
         ResourceBundle messages = languageManager.getMessagesBundle();
 
-        Dialog<String> dialog = new Dialog<>();
-        dialog.setTitle(messages.getString("dialog.save.title"));
-        dialog.setHeaderText(messages.getString("dialog.save.header"));
-
-        ButtonType okButtonType = new ButtonType(messages.getString("button.ok"), ButtonBar.ButtonData.OK_DONE);
-        ButtonType cancelButtonType = new ButtonType(messages.getString("button.cancel"), 
-                ButtonBar.ButtonData.CANCEL_CLOSE);
-        dialog.getDialogPane().getButtonTypes().addAll(okButtonType, cancelButtonType);
-
-        TextField textField = new TextField(DEFAULT_SAVE_NAME);
-
-        GridPane grid = new GridPane();
-        grid.setHgap(10);
-        grid.setVgap(10);
-        grid.setPadding(new Insets(20, 150, 10, 10));
-        grid.add(new Label(messages.getString("dialog.save.content")), 0, 0);
-        grid.add(textField, 1, 0);
-
-        dialog.getDialogPane().setContent(grid);
-
-        Platform.runLater(textField::requestFocus);
-
-        dialog.setResultConverter(dialogButton -> {
-            if (dialogButton == okButtonType) {
-                return textField.getText();
-            }
-            return null;
-        });
-
-        Optional<String> result = dialog.showAndWait();
+        Optional<String> result = showSaveDialog(
+            messages.getString("dialog.save.title"),
+            messages.getString("dialog.save.header"),
+            DEFAULT_SAVE_NAME
+        );
 
         result.ifPresent(filename -> {
-            if (!filename.endsWith(".sudoku")) {
-                filename += ".sudoku";
-            }
+            String finalFilename = filename.endsWith(".sudoku") ? filename : filename + ".sudoku";
 
-            logger.debug("Saving game to file: {}", filename);
+            logger.debug("Saving game to file: {}", finalFilename);
 
             try (Dao<EditableSudokuBoardDecorator> dao = SudokuBoardDaoFactory.getEditableFileDao(SAVE_DIRECTORY)) {
-                dao.write(filename, decoratedBoard);
+                dao.write(finalFilename, decoratedBoard);
 
-                logger.info("Game saved successfully to {}", filename);
+                logger.info("Game saved successfully to {}", finalFilename);
 
                 showAlert(Alert.AlertType.INFORMATION, 
                         messages.getString("alert.saveSuccess"), 
-                        messages.getString("alert.saveSuccess.content") + filename);
+                        messages.getString("alert.saveSuccess.content") + finalFilename);
             } catch (Exception e) {
                 logger.error("Failed to save game: {}", e.getMessage(), e);
 
@@ -389,37 +370,11 @@ public class SudokuBoardController implements Initializable {
 
             logger.debug("Found {} saved games", savedGames.size());
 
-            Dialog<String> dialog = new Dialog<>();
-            dialog.setTitle(messages.getString("dialog.load.title"));
-            dialog.setHeaderText(messages.getString("dialog.load.header"));
-
-            ButtonType okButtonType = new ButtonType(messages.getString("button.ok"), 
-                    ButtonBar.ButtonData.OK_DONE);
-            ButtonType cancelButtonType = new ButtonType(messages.getString("button.cancel"), 
-                    ButtonBar.ButtonData.CANCEL_CLOSE);
-            dialog.getDialogPane().getButtonTypes().addAll(okButtonType, cancelButtonType);
-
-            ComboBox<String> comboBox = new ComboBox<>();
-            comboBox.getItems().addAll(savedGames);
-            comboBox.setValue(savedGames.get(0));
-
-            GridPane grid = new GridPane();
-            grid.setHgap(10);
-            grid.setVgap(10);
-            grid.setPadding(new Insets(20, 150, 10, 10));
-            grid.add(new Label(messages.getString("dialog.load.content")), 0, 0);
-            grid.add(comboBox, 1, 0);
-
-            dialog.getDialogPane().setContent(grid);
-
-            dialog.setResultConverter(dialogButton -> {
-                if (dialogButton == okButtonType) {
-                    return comboBox.getValue();
-                }
-                return null;
-            });
-
-            Optional<String> result = dialog.showAndWait();
+            Optional<String> result = showLoadDialog(
+                messages.getString("dialog.load.title"),
+                messages.getString("dialog.load.header"),
+                savedGames
+            );
 
             result.ifPresent(filename -> {
                 try {
@@ -446,6 +401,107 @@ public class SudokuBoardController implements Initializable {
             });
         } catch (Exception e) {
             logger.error("Unexpected error while loading game", e);
+
+            showAlert(Alert.AlertType.ERROR, 
+                    messages.getString("alert.error"), 
+                    messages.getString("alert.error.content") + e.getMessage());
+        }
+    }
+    
+    @FXML
+    @SuppressWarnings("PMD.UnusedPrivateMethod")
+    private void saveGameToDatabase() {
+        ResourceBundle messages = languageManager.getMessagesBundle();
+
+        Optional<String> result = showSaveDialog(
+            messages.getString("dialog.save.database.title"),
+            messages.getString("dialog.save.database.header"),
+            "game_" + System.currentTimeMillis()
+        );
+
+        result.ifPresent(boardName -> {
+            logger.debug("Saving game to database with name: {}", boardName);
+
+            try (Dao<EditableSudokuBoardDecorator> dao = SudokuBoardDaoFactory.getJdbcDao()) {
+                if (decoratedBoard == null && board != null) {
+                    decoratedBoard = new EditableSudokuBoardDecorator(board);
+                    decoratedBoard.lockNonEmptyFields();
+                }
+
+                if (decoratedBoard != null) {
+                    dao.write(boardName, decoratedBoard);
+
+                    logger.info("Game saved successfully to database with preserved editability: {}", boardName);
+
+                    showAlert(Alert.AlertType.INFORMATION, 
+                            messages.getString("alert.saveSuccess"), 
+                            messages.getString("alert.saveSuccess.database.content") + boardName);
+                } else {
+                    logger.error("No board available to save");
+                    showAlert(Alert.AlertType.ERROR, 
+                            messages.getString("alert.saveError"), 
+                            "No board available to save");
+                }
+            } catch (Exception e) {
+                logger.error("Failed to save game to database: {}", e.getMessage(), e);
+
+                showAlert(Alert.AlertType.ERROR, 
+                        messages.getString("alert.saveError"), 
+                        messages.getString("alert.saveError.content") + e.getMessage());
+            }
+        });
+    }
+
+    @FXML
+    @SuppressWarnings("PMD.UnusedPrivateMethod")
+    private void loadGameFromDatabase() {
+        ResourceBundle messages = languageManager.getMessagesBundle();
+
+        logger.debug("Attempting to load game from database");
+
+        try (Dao<EditableSudokuBoardDecorator> dao = SudokuBoardDaoFactory.getJdbcDao()) {
+            List<String> savedGames = dao.names();
+
+            if (savedGames.isEmpty()) {
+                logger.info("No saved games found in database");
+
+                showAlert(Alert.AlertType.INFORMATION, 
+                        messages.getString("dialog.noSavedGames.database"), 
+                        messages.getString("dialog.noSavedGames.database.content"));
+                return;
+            }
+
+            logger.debug("Found {} saved games in database", savedGames.size());
+
+            Optional<String> result = showLoadDialog(
+                messages.getString("dialog.load.database.title"),
+                messages.getString("dialog.load.database.header"),
+                savedGames
+            );
+
+            result.ifPresent(boardName -> {
+                try {
+                    logger.debug("Loading game from database: {}", boardName);
+
+                    EditableSudokuBoardDecorator loadedDecorator = dao.read(boardName);
+
+                    setDecoratedBoard(loadedDecorator);
+
+                    logger.info("Game loaded successfully from database: {}", boardName);
+
+                    showAlert(Alert.AlertType.INFORMATION, 
+                            messages.getString("alert.loadSuccess"), 
+                            messages.getString("alert.loadSuccess.database.content") + boardName);
+                } catch (DaoException e) {
+                    logger.error("Failed to load game from database: {}", e.getMessage(), e);
+
+                    showAlert(Alert.AlertType.ERROR, 
+                            messages.getString("alert.loadError"), 
+                            messages.getString("alert.loadError.content") + e.getMessage());
+                }
+            });
+        } catch (Exception e) {
+            logger.error("Unexpected error while loading game from database", e);
 
             showAlert(Alert.AlertType.ERROR, 
                     messages.getString("alert.error"), 
@@ -502,6 +558,76 @@ public class SudokuBoardController implements Initializable {
         }
         
         logger.debug("Board updated with JavaFX Property bindings");
+    }
+    
+    private Optional<String> showSaveDialog(String title, String header, String defaultName) {
+        ResourceBundle messages = languageManager.getMessagesBundle();
+        
+        Dialog<String> dialog = new Dialog<>();
+        dialog.setTitle(title);
+        dialog.setHeaderText(header);
+
+        ButtonType okButtonType = new ButtonType(messages.getString("button.ok"), 
+                ButtonBar.ButtonData.OK_DONE);
+        ButtonType cancelButtonType = new ButtonType(messages.getString("button.cancel"), 
+                ButtonBar.ButtonData.CANCEL_CLOSE);
+        dialog.getDialogPane().getButtonTypes().addAll(okButtonType, cancelButtonType);
+
+        TextField textField = new TextField(defaultName);
+
+        GridPane grid = createDialogGrid(messages.getString("dialog.save.content"), textField);
+        dialog.getDialogPane().setContent(grid);
+
+        Platform.runLater(textField::requestFocus);
+
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == okButtonType) {
+                return textField.getText();
+            }
+            return null;
+        });
+
+        return dialog.showAndWait();
+    }
+    
+    private Optional<String> showLoadDialog(String title, String header, List<String> items) {
+        ResourceBundle messages = languageManager.getMessagesBundle();
+        
+        Dialog<String> dialog = new Dialog<>();
+        dialog.setTitle(title);
+        dialog.setHeaderText(header);
+
+        ButtonType okButtonType = new ButtonType(messages.getString("button.ok"), 
+                ButtonBar.ButtonData.OK_DONE);
+        ButtonType cancelButtonType = new ButtonType(messages.getString("button.cancel"), 
+                ButtonBar.ButtonData.CANCEL_CLOSE);
+        dialog.getDialogPane().getButtonTypes().addAll(okButtonType, cancelButtonType);
+
+        ComboBox<String> comboBox = new ComboBox<>();
+        comboBox.getItems().addAll(items);
+        comboBox.setValue(items.get(0));
+
+        GridPane grid = createDialogGrid(messages.getString("dialog.load.content"), comboBox);
+        dialog.getDialogPane().setContent(grid);
+
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == okButtonType) {
+                return comboBox.getValue();
+            }
+            return null;
+        });
+
+        return dialog.showAndWait();
+    }
+    
+    private GridPane createDialogGrid(String labelText, javafx.scene.Node inputControl) {
+        GridPane grid = new GridPane();
+        grid.setHgap(10);
+        grid.setVgap(10);
+        grid.setPadding(new Insets(20, 150, 10, 10));
+        grid.add(new Label(labelText), 0, 0);
+        grid.add(inputControl, 1, 0);
+        return grid;
     }
     
     private void showAlert(Alert.AlertType type, String title, String content) {

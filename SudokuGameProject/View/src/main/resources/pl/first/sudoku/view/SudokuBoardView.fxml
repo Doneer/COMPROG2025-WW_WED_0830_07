@@ -21,6 +21,8 @@
       <Button fx:id="checkSolutionButton" onAction="#checkSolution"/>
       <Button fx:id="saveGameButton" onAction="#saveGame"/>
       <Button fx:id="loadGameButton" onAction="#loadGame"/>
+      <Button fx:id="saveDbButton" onAction="#saveGameToDatabase" text="Save to DB"/>
+      <Button fx:id="loadDbButton" onAction="#loadGameFromDatabase" text="Load from DB"/>
       <Button fx:id="languageButton" onAction="#changeLanguage"/>
    </HBox>
 </VBox>
